@@ -8,7 +8,7 @@ import Text from '@/components/Text'
 import Heading from '@/components/typo/Heading'
 import Paragraph from '@/components/typo/Paragraph'
 import Image from 'next/image'
-import { Swiper, SwiperSlide } from 'swiper/react'
+import { Swiper, SwiperSlide, SwiperClass } from 'swiper/react'
 import '../styles/global.scss'
 import { Mousewheel } from 'swiper/modules'
 
@@ -28,7 +28,7 @@ export default function Home() {
 	}
 
 	// Анимация заголовка при смене слайда
-	const handleSlideTransitionEnd = (swiper: any) => {
+	const handleSlideTransitionEnd = (swiper: SwiperClass) => {
 		const activeIndex = swiper.activeIndex - 1
 		const activeHeading = headingRefs.current[activeIndex]
 
