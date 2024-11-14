@@ -1,6 +1,4 @@
 import { ReactNode } from 'react'
-import Heading from './typo/Heading'
-import Paragraph from './typo/Paragraph'
 
 type Props = {
 	className?: string

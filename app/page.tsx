@@ -105,7 +105,7 @@ export default function Home() {
 					<Text>
 						<Heading text='Where?' ref={addToHeadingRefs} />
 						<Paragraph>
-							Наш праздник пройдет в&nbsp;ресторане "Русская рыбалка"
+							Наш праздник пройдет в&nbsp;ресторане &quot;Русская рыбалка&quot;
 							<br />
 							<span className='font-semibold'>
 								По адресу: Пос. Комарово, Приморское шоссе, 452 А
