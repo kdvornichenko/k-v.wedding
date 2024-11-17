@@ -11,31 +11,70 @@ import Image from 'next/image'
 import { Swiper, SwiperSlide, SwiperClass } from 'swiper/react'
 import '../styles/global.scss'
 import { Mousewheel } from 'swiper/modules'
+import Preview from '@/components/Preview'
 
 export default function Home() {
 	const [isMapLoaded, setIsMapLoaded] = useState(false)
-	const headingRefs = useRef<HTMLHeadingElement[]>([])
+	const [isPreviewComplete, setIsPreviewComplete] = useState(false)
+	const [animDelay] = useState(0.3)
+	const slideRefs = useRef<
+		Record<
+			number,
+			{
+				heading?: HTMLElement
+				text?: HTMLElement
+				image?: HTMLElement
+				map?: HTMLElement
+			}
+		>
+	>({})
 
 	useEffect(() => {
 		setIsMapLoaded(true)
 	}, [])
 
-	// Функция для добавления рефов к заголовкам
-	const addToHeadingRefs = (el: HTMLHeadingElement) => {
-		if (el && !headingRefs.current.includes(el)) {
-			headingRefs.current.push(el)
+	// Универсальная функция для добавления рефов
+	const addToSlideRefs = (
+		index: number,
+		type: 'heading' | 'text' | 'image' | 'map',
+		el: HTMLElement | null
+	): void => {
+		if (!el) return // Пропускаем, если элемент отсутствует
+		if (!slideRefs.current[index]) {
+			slideRefs.current[index] = {}
 		}
+		slideRefs.current[index][type] = el
 	}
 
-	// Анимация заголовка при смене слайда
+	// Анимация при завершении смены слайда
 	const handleSlideTransitionEnd = (swiper: SwiperClass) => {
-		const activeIndex = swiper.activeIndex - 1
-		const activeHeading = headingRefs.current[activeIndex]
+		const activeRefs = slideRefs.current[swiper.activeIndex]
 
-		// Анимация для активного заголовка
-		if (activeHeading) {
-			gsap.to(activeHeading, { opacity: 1, y: 0, duration: 1 })
-		}
+		if (!activeRefs) return
+
+		Object.entries(activeRefs).forEach(([type, element]) => {
+			if (!element || element.classList.contains('animated')) return
+
+			// Определяем параметры анимации
+			const animationParams =
+				type === 'heading' || type === 'text'
+					? {
+							opacity: 1,
+							y: 0,
+							duration: 1,
+							delay: type === 'text' ? animDelay : 0,
+					  }
+					: { opacity: 1, duration: 1, ease: 'power1.in' }
+
+			// Запускаем анимацию
+			gsap.to(element, {
+				...animationParams,
+				onComplete: () => {
+					// Добавляем класс после завершения анимации
+					element.classList.add('animated')
+				},
+			})
+		})
 	}
 
 	const getYearPhrase = (targetYear: number = 2025): string => {
@@ -52,22 +91,23 @@ export default function Home() {
 			mousewheel={{ forceToAxis: true }}
 			speed={1200}
 			onSlideChangeTransitionEnd={handleSlideTransitionEnd}
+			allowSlideNext={isPreviewComplete}
+			allowSlidePrev={isPreviewComplete}
 		>
 			<SwiperSlide>
-				<Image
-					src='/img/3.jpg'
-					alt=''
-					width={2560}
-					height={1440}
-					className='w-full h-screen object-cover object-left'
+				<Preview
+					totalImages={6}
+					onComplete={() => setIsPreviewComplete(true)}
 				/>
 			</SwiperSlide>
 			<SwiperSlide>
 				<Block>
 					<Text>
-						{/* Добавляем реф к заголовку */}
-						<Heading text='Dear Guests!' ref={addToHeadingRefs} />
-						<Paragraph>
+						<Heading
+							text='Dear Guests!'
+							ref={el => addToSlideRefs(1, 'heading', el)}
+						/>
+						<Paragraph ref={el => addToSlideRefs(1, 'text', el)}>
 							<>
 								Один день в {getYearPhrase()} году станет для нас особенно
 								важным, и мы хотим провести его в кругу близких и друзей!
@@ -80,7 +120,8 @@ export default function Home() {
 						alt=''
 						width={2560}
 						height={1440}
-						className='w-full h-full max-h-[800px] object-cover object-left rounded-t-full'
+						className='opacity-0 w-full h-full max-h-[800px] object-cover object-left rounded-t-full'
+						ref={el => addToSlideRefs(1, 'image', el)}
 					/>
 				</Block>
 			</SwiperSlide>
@@ -91,10 +132,14 @@ export default function Home() {
 						<Heading
 							text='When?'
 							className='text-center'
-							ref={addToHeadingRefs}
+							ref={el => addToSlideRefs(2, 'heading', el)}
 						/>
-						<Paragraph size='text-4xl' className='text-center'>
-							00.06.2025
+						<Paragraph
+							ref={el => addToSlideRefs(2, 'text', el)}
+							size='text-5xl'
+							className='text-center'
+						>
+							11.06.2025
 						</Paragraph>
 					</Text>
 				</Block>
@@ -103,18 +148,24 @@ export default function Home() {
 			<SwiperSlide>
 				<Block noGrid className='flex flex-col justify-center'>
 					<Text>
-						<Heading text='Where?' ref={addToHeadingRefs} />
-						<Paragraph>
+						<Heading
+							text='Where?'
+							ref={el => addToSlideRefs(3, 'heading', el)}
+						/>
+						<Paragraph ref={el => addToSlideRefs(3, 'text', el)}>
 							Наш праздник пройдет в&nbsp;ресторане &quot;Русская рыбалка&quot;
 							<br />
 							<span className='font-semibold'>
 								По адресу: Пос. Комарово, Приморское шоссе, 452 А
 							</span>
 						</Paragraph>
+						{isMapLoaded && (
+							<Map
+								ref={el => addToSlideRefs(3, 'map', el)}
+								className='w-full h-[50vh] rounded-3xl overflow-hidden mt-10'
+							/>
+						)}
 					</Text>
-					{isMapLoaded && (
-						<Map className='w-full h-1/2 rounded-3xl overflow-hidden mt-10' />
-					)}
 				</Block>
 			</SwiperSlide>
 		</Swiper>

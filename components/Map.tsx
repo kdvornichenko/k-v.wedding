@@ -1,4 +1,4 @@
-import React, { FC, useRef } from 'react'
+import React, { forwardRef, useRef } from 'react'
 import {
 	YMap,
 	YMapComponentsProvider,
@@ -11,7 +11,7 @@ type TMap = {
 	className?: string
 }
 
-const Map: FC<TMap> = ({ className }) => {
+const Map = forwardRef<HTMLDivElement, TMap>(({ className }, ref) => {
 	const ymap3Ref = useRef(null)
 	const api = process.env.NEXT_PUBLIC_YMAPS_API
 
@@ -20,10 +20,10 @@ const Map: FC<TMap> = ({ className }) => {
 		zoom: 9.5,
 	}
 
-	if (!api) return
+	if (!api) return null
 
 	return (
-		<div className={className}>
+		<div className={`opacity-0 ${className}`} ref={ref}>
 			<YMapComponentsProvider apiKey={api} lang='ru_RU'>
 				<YMap
 					key='map'
@@ -39,6 +39,9 @@ const Map: FC<TMap> = ({ className }) => {
 			</YMapComponentsProvider>
 		</div>
 	)
-}
+})
+
+// Устанавливаем имя компонента для отладки
+Map.displayName = 'Map'
 
 export default Map
