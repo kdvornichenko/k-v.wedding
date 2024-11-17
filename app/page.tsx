@@ -94,13 +94,13 @@ export default function Home() {
 			allowSlideNext={isPreviewComplete}
 			allowSlidePrev={isPreviewComplete}
 		>
-			<SwiperSlide>
+			<SwiperSlide className='h-screen'>
 				<Preview
 					totalImages={6}
 					onComplete={() => setIsPreviewComplete(true)}
 				/>
 			</SwiperSlide>
-			<SwiperSlide>
+			<SwiperSlide className='h-screen'>
 				<Block>
 					<Text>
 						<Heading
@@ -126,7 +126,7 @@ export default function Home() {
 				</Block>
 			</SwiperSlide>
 
-			<SwiperSlide>
+			<SwiperSlide className='h-screen'>
 				<Block noGrid className='flex items-center justify-center'>
 					<Text>
 						<Heading
@@ -145,7 +145,7 @@ export default function Home() {
 				</Block>
 			</SwiperSlide>
 
-			<SwiperSlide>
+			<SwiperSlide className='h-screen'>
 				<Block noGrid className='flex flex-col justify-center'>
 					<Text>
 						<Heading
