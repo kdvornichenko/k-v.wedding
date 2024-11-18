@@ -31,6 +31,10 @@ export default function Home() {
 	>({})
 	const containerRef = useRef<HTMLDivElement>(null) // Реф для корневого контейнера
 
+	useEffect(() => {
+		console.log('isPreviewComplete')
+	}, [isPreviewComplete])
+
 	// Универсальная функция для добавления рефов
 	const addToSlideRefs = (
 		index: number,
@@ -88,6 +92,9 @@ export default function Home() {
 			animateElement(refs.text)
 			animateElement(refs.image)
 			animateElement(refs.map)
+
+			console.log(key);
+			
 		})
 	}, [isMapLoaded])
 
@@ -164,7 +171,7 @@ export default function Home() {
 								<span className='font-semibold'>
 									По адресу: Пос. Комарово, Приморское шоссе, 452 А,
 									<br />
-									банкетный зал "Летний"
+									банкетный зал &quot;Летний&quot;
 								</span>
 							</Paragraph>
 							{isMapLoaded && (
