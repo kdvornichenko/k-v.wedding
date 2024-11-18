@@ -75,7 +75,7 @@ export default function Home() {
 				{
 					opacity: 1,
 					scrollTrigger: {
-						markers: true,
+						markers: false,
 						trigger: element,
 						start: 'top 100%',
 						end: 'top 0',
