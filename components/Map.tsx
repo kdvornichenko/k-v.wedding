@@ -23,7 +23,7 @@ const Map = forwardRef<HTMLDivElement, TMap>(({ className }, ref) => {
 	if (!api) return null
 
 	return (
-		<div className={`opacity-0 ${className}`} ref={ref}>
+		<div className={`${className}`} ref={ref}>
 			<YMapComponentsProvider apiKey={api} lang='ru_RU'>
 				<YMap
 					key='map'
