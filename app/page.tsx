@@ -106,6 +106,8 @@ export default function Home() {
 	}
 
 	useEffect(() => {
+		if (!isSlideShowComplete && !lenis) return
+
 		lenis?.start()
 		lenis?.scrollTo(window.innerHeight / 2, {
 			duration: 1.2, // Продолжительность прокрутки
