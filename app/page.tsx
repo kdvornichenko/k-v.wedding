@@ -8,16 +8,19 @@ import Heading from '@/components/typo/Heading'
 import Paragraph from '@/components/typo/Paragraph'
 import Image from 'next/image'
 import '../styles/global.scss'
-import Preview from '@/components/Preview'
+
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ReactLenis } from '@studio-freight/react-lenis'
+import { ReactLenis, useLenis } from '@studio-freight/react-lenis'
+import Loader from '@/components/Loader'
+import SlideShow from '@/components/SlideShow'
+import useSlideShowStore from '@/store/slideShow.store'
 
 gsap.registerPlugin(ScrollTrigger)
 
 export default function Home() {
 	const [isMapLoaded, setIsMapLoaded] = useState(false)
-	const [isPreviewComplete, setIsPreviewComplete] = useState(true)
+	const { isSlideShowComplete } = useSlideShowStore()
 	const slideRefs = useRef<
 		Record<
 			number,
@@ -30,10 +33,7 @@ export default function Home() {
 		>
 	>({})
 	const containerRef = useRef<HTMLDivElement>(null) // Реф для корневого контейнера
-
-	useEffect(() => {
-		console.log('isPreviewComplete')
-	}, [isPreviewComplete])
+	const lenis = useLenis()
 
 	// Универсальная функция для добавления рефов
 	const addToSlideRefs = (
@@ -54,7 +54,6 @@ export default function Home() {
 		// Настройка ResizeObserver
 		const observer = new ResizeObserver(() => {
 			window.dispatchEvent(new Event('resize', { bubbles: true }))
-			console.log('ResizeObserver: размеры изменены')
 		})
 
 		if (containerRef.current) {
@@ -65,6 +64,10 @@ export default function Home() {
 			observer.disconnect() // Отключаем наблюдатель при размонтировании
 		}
 	}, [])
+
+	useEffect(() => {
+		lenis?.stop()
+	}, [lenis])
 
 	useEffect(() => {
 		const animateElement = (element: HTMLElement | undefined) => {
@@ -78,7 +81,7 @@ export default function Home() {
 						markers: false,
 						trigger: element,
 						start: 'top 100%',
-						end: 'top 0',
+						end: 'top +=50%',
 						scrub: true,
 					},
 				}
@@ -93,8 +96,7 @@ export default function Home() {
 			animateElement(refs.image)
 			animateElement(refs.map)
 
-			console.log(key);
-			
+			console.log(key)
 		})
 	}, [isMapLoaded])
 
@@ -103,15 +105,21 @@ export default function Home() {
 		return currentYear === targetYear ? 'этом' : 'следующем'
 	}
 
+	useEffect(() => {
+		lenis?.start()
+		lenis?.scrollTo(window.innerHeight / 2, {
+			duration: 1.2, // Продолжительность прокрутки
+			easing: (t: number) => t * (2 - t), // Функция easing
+		})
+	}, [lenis, isSlideShowComplete])
+
 	return (
 		<ReactLenis root>
-			<div ref={containerRef} className='relative bg-stone-50'>
+			<Loader />
+			<div ref={containerRef} className='relative bg-stone-50 z-10'>
 				<div className='relative z-20'>
 					<div className='h-screen'>
-						<Preview
-							totalImages={6}
-							onComplete={() => setIsPreviewComplete(true)}
-						/>
+						<SlideShow totalImages={6} />
 					</div>
 					<Block className='py-10 h-screen'>
 						<Text className='py-20'>

@@ -12,7 +12,9 @@ const Heading = forwardRef<HTMLHeadingElement, Props>(
 		return (
 			<h2
 				ref={ref}
-				className={`font-kudry text-9xl ${className || ''}`}
+				className={`font-kudry py-2 text-9xl ${
+					className || ''
+				} bg-clip-text bg-[length:50px_50px] bg-repeat bg-[url("/img/pattern.png")] text-transparent`}
 				dangerouslySetInnerHTML={{ __html: text }}
 			/>
 		)
