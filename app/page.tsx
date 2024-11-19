@@ -66,8 +66,12 @@ export default function Home() {
 	}, [])
 
 	useEffect(() => {
-		window.scrollTo({ top: 0 })
-		lenis?.stop()
+		lenis?.scrollTo(0, {
+			duration: 0.0001,
+			onComplete: () => {
+				lenis?.stop()
+			},
+		})
 	}, [lenis])
 
 	useEffect(() => {
