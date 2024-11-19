@@ -83,7 +83,7 @@ export default function Home() {
 						markers: false,
 						trigger: element,
 						start: 'top bottom',
-						end: 'top +=30%',
+						end: 'top +=50%',
 						scrub: true,
 					},
 				}
