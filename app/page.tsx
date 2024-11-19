@@ -75,14 +75,15 @@ export default function Home() {
 			if (!element) return
 			gsap.fromTo(
 				element,
-				{ opacity: 0 },
+				{ opacity: 0, y: 100 },
 				{
 					opacity: 1,
+					y: -50,
 					scrollTrigger: {
 						markers: false,
 						trigger: element,
-						start: 'top 100%',
-						end: 'top +=50%',
+						start: 'top bottom',
+						end: 'top +=30%',
 						scrub: true,
 					},
 				}
@@ -115,7 +116,7 @@ export default function Home() {
 	}, [lenis, isSlideShowComplete])
 
 	return (
-		<ReactLenis root>
+		<ReactLenis root options={{ syncTouch: true, smoothWheel: true }}>
 			<Loader />
 			<div ref={containerRef} className='relative bg-stone-50 z-10 '>
 				<div className='relative z-20'>
@@ -139,7 +140,7 @@ export default function Home() {
 							alt=''
 							width={2560}
 							height={1440}
-							className='w-full h-full max-h-[800px] object-cover object-left rounded-t-full'
+							className='w-full h-[90dvh] max-h-[800px] object-cover object-left rounded-t-full'
 							ref={el => addToSlideRefs(1, 'image', el)}
 						/>
 					</Block>
