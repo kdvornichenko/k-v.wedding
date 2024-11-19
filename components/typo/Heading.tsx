@@ -14,7 +14,7 @@ const Heading = forwardRef<HTMLHeadingElement, Props>(
 				ref={ref}
 				className={`font-kudry py-2 text-9xl ${
 					className || ''
-				} bg-clip-text bg-[length:50px_50px] bg-repeat bg-[url("/img/pattern.png")] text-transparent`}
+				} bg-clip-text bg-[length:60px_60px] bg-repeat bg-slate-950/80 bg-[url("/img/pattern-50.png")] text-transparent`}
 				dangerouslySetInnerHTML={{ __html: text }}
 			/>
 		)

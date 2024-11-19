@@ -66,6 +66,7 @@ export default function Home() {
 	}, [])
 
 	useEffect(() => {
+		window.scrollTo({ top: 0 })
 		lenis?.stop()
 	}, [lenis])
 
@@ -88,15 +89,13 @@ export default function Home() {
 			)
 		}
 
-		Object.entries(slideRefs.current).forEach(([key, refs]) => {
+		Object.entries(slideRefs.current).forEach(([, refs]) => {
 			if (!refs) return
 
 			animateElement(refs.heading)
 			animateElement(refs.text)
 			animateElement(refs.image)
 			animateElement(refs.map)
-
-			console.log(key)
 		})
 	}, [isMapLoaded])
 
@@ -109,21 +108,19 @@ export default function Home() {
 		if (!isSlideShowComplete) return
 
 		lenis?.start()
-		lenis?.scrollTo(window.innerHeight / 2.5, {
-			duration: 1.2, // Продолжительность прокрутки
-			easing: (t: number) => t * (2 - t), // Функция easing
+		lenis?.scrollTo(window.innerHeight / 1.5, {
+			duration: 1.5, // Продолжительность прокрутки
+			easing: (t: number) => Math.min(1, Math.sqrt(1 - Math.pow(t - 1, 2))),
 		})
 	}, [lenis, isSlideShowComplete])
 
 	return (
 		<ReactLenis root>
 			<Loader />
-			<div ref={containerRef} className='relative bg-stone-50 z-10'>
+			<div ref={containerRef} className='relative bg-stone-50 z-10 '>
 				<div className='relative z-20'>
-					<div className='h-screen'>
-						<SlideShow totalImages={6} />
-					</div>
-					<Block className='py-10 h-screen'>
+					<SlideShow totalImages={6} />
+					<Block className='py-10'>
 						<Text className='py-20'>
 							<Heading
 								text='Dear Guests!'
@@ -147,7 +144,7 @@ export default function Home() {
 						/>
 					</Block>
 
-					<Block noGrid className='flex items-center justify-center h-screen'>
+					<Block noGrid className='flex items-center justify-center'>
 						<Text>
 							<Heading
 								text='When?'
