@@ -106,10 +106,10 @@ export default function Home() {
 	}
 
 	useEffect(() => {
-		if (!isSlideShowComplete && !lenis) return
+		if (!isSlideShowComplete) return
 
 		lenis?.start()
-		lenis?.scrollTo(window.innerHeight / 2, {
+		lenis?.scrollTo(window.innerHeight / 2.5, {
 			duration: 1.2, // Продолжительность прокрутки
 			easing: (t: number) => t * (2 - t), // Функция easing
 		})
