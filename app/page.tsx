@@ -75,15 +75,28 @@ export default function Home() {
 			if (!element) return
 			gsap.fromTo(
 				element,
-				{ opacity: 0, y: 100 },
+				{ opacity: 0 },
 				{
 					opacity: 1,
-					y: -50,
 					scrollTrigger: {
 						markers: false,
 						trigger: element,
 						start: 'top bottom',
 						end: 'top +=50%',
+						scrub: true,
+					},
+				}
+			)
+
+			gsap.fromTo(
+				element,
+				{ y: 100 },
+				{
+					y: -100,
+					scrollTrigger: {
+						markers: false,
+						trigger: element,
+						start: 'top bottom',
 						scrub: true,
 					},
 				}
