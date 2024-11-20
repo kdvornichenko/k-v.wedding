@@ -11,7 +11,7 @@ import '../styles/global.scss'
 
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ReactLenis, useLenis } from '@studio-freight/react-lenis'
+import { ReactLenis } from '@studio-freight/react-lenis'
 import Loader from '@/components/Loader'
 import SlideShow from '@/components/SlideShow'
 import LetterFx from '@/lib/LetterFX'
