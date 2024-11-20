@@ -105,7 +105,7 @@ export default function Home() {
 						markers: false,
 						trigger: element,
 						start: 'top bottom',
-						end: 'top +=50%',
+						end: 'top +=30%',
 						scrub: true,
 					},
 				}
