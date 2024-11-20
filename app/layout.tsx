@@ -32,7 +32,7 @@ export default function RootLayout({
 	return (
 		<html lang='en'>
 			<body
-				className={`${geistSans.variable} ${geistMono.variable} ${gyreMono.variable} antialiased overflow-hidden`}
+				className={`${geistSans.variable} ${geistMono.variable} ${gyreMono.variable} antialiased overflow-x-hidden w-screen`}
 			>
 				{children}
 			</body>

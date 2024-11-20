@@ -9,8 +9,12 @@ type Props = {
 const Block = ({ children, className, noGrid }: Props) => {
 	return (
 		<div
-			className={`h-screen max-w-7xl mx-auto px-4 ${className || ''} ${
-				noGrid ? '' : 'grid grid-cols-[7fr_5fr] gap-x-10 items-center'
+			className={`h-full min-h-screen max-w-7xl mx-auto px-4 ${
+				className || ''
+			} ${
+				noGrid
+					? ''
+					: 'grid grid-cols-1 lg:grid-cols-[7fr_5fr] gap-x-2 lg:gap-x-10 items-center'
 			}`}
 		>
 			{children}

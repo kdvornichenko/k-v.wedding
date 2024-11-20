@@ -1,8 +1,18 @@
 import useLoaderStore from '@/store/loadre.store'
 import Heading from './typo/Heading'
+import { useEffect } from 'react'
 
 const Loader = () => {
 	const { loaded, progress } = useLoaderStore()
+
+	useEffect(() => {
+		if (!loaded) {
+			document.body.style.overflow = 'hidden'
+		} else {
+			document.body.style.overflow = ''
+		}
+	}, [loaded])
+
 	return (
 		<div
 			className={`fixed inset-0 w-screen h-screen bg-stone-50 flex items-center justify-center text-white text-2xl z-20 transition-opacity duration-1000 pointer-events-none ${

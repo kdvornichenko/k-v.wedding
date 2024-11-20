@@ -3,19 +3,19 @@ import { forwardRef, ReactNode } from 'react'
 type Props = {
 	children?: ReactNode
 	className?: string
-	size?: 'text-2xl' | 'text-3xl' | 'text-4xl' | 'text-5xl'
+	customSize?: boolean
 }
 
 const Paragraph = forwardRef<HTMLParagraphElement, Props>(
-	({ children, className, size }, ref) => {
+	({ children, className, customSize }, ref) => {
 		if (!children) return null
 
 		return (
 			<p
 				ref={ref} // Передаем ref в элемент <p>
-				className={`font-gyre-mono ${
-					className || ''
-				} ${size || 'text-3xl'}`}
+				className={`font-gyre-mono ${className || ''} ${
+					customSize || 'text-2xl sm:text-3xl'
+				}`}
 			>
 				{children}
 			</p>

@@ -14,13 +14,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ReactLenis, useLenis } from '@studio-freight/react-lenis'
 import Loader from '@/components/Loader'
 import SlideShow from '@/components/SlideShow'
-import useSlideShowStore from '@/store/slideShow.store'
+import LetterFx from '@/lib/LetterFX'
 
 gsap.registerPlugin(ScrollTrigger)
 
 export default function Home() {
 	const [isMapLoaded, setIsMapLoaded] = useState(false)
-	const { isSlideShowComplete } = useSlideShowStore()
 	const slideRefs = useRef<
 		Record<
 			number,
@@ -32,7 +31,11 @@ export default function Home() {
 			}
 		>
 	>({})
-	const containerRef = useRef<HTMLDivElement>(null) // Реф для корневого контейнера
+	const containerRef = useRef<HTMLDivElement>(null)
+	const letterFxTriggerRef1 = useRef<() => void>()
+	const letterFxTriggerRef2 = useRef<() => void>()
+	const letterFxTriggerRef3 = useRef<() => void>()
+	const letterFxTriggerRef4 = useRef<() => void>()
 	const lenis = useLenis()
 
 	// Универсальная функция для добавления рефов
@@ -41,7 +44,7 @@ export default function Home() {
 		type: 'heading' | 'text' | 'image' | 'map',
 		el: HTMLElement | null
 	): void => {
-		if (!el) return // Пропускаем, если элемент отсутствует
+		if (!el) return
 		if (!slideRefs.current[index]) {
 			slideRefs.current[index] = {}
 		}
@@ -51,28 +54,51 @@ export default function Home() {
 	useEffect(() => {
 		setIsMapLoaded(true)
 
+		const textElement = slideRefs.current[2]?.text // Убедитесь, что это правильный элемент
+
+		if (textElement) {
+			ScrollTrigger.create({
+				trigger: textElement,
+				start: 'bottom bottom', // Когда элемент достигает низа области видимости
+				onEnter: () => {
+					const letters = [
+						letterFxTriggerRef1,
+						letterFxTriggerRef2,
+						letterFxTriggerRef3,
+						letterFxTriggerRef4,
+					]
+
+					letters.forEach(item => {
+						item.current?.() // Вызываем функцию анимации, если она существует
+					})
+				},
+				once: true,
+			})
+		}
+
 		// Настройка ResizeObserver
 		const observer = new ResizeObserver(() => {
 			window.dispatchEvent(new Event('resize', { bubbles: true }))
 		})
 
 		if (containerRef.current) {
-			observer.observe(containerRef.current) // Следим за изменениями размеров корневого элемента
+			observer.observe(containerRef.current)
 		}
 
 		return () => {
-			observer.disconnect() // Отключаем наблюдатель при размонтировании
+			observer.disconnect()
+			ScrollTrigger.killAll() // Удаляем триггер при размонтировании
 		}
 	}, [])
 
 	useEffect(() => {
-		lenis?.scrollTo(0, {
-			duration: 0.0001,
-			onComplete: () => {
-				lenis?.stop()
-			},
-		})
+		onLenisLoad()
 	}, [lenis])
+
+	const onLenisLoad = () => {
+		window.scrollTo(0, 0)
+		lenis?.stop()
+	}
 
 	useEffect(() => {
 		const animateElement = (element: HTMLElement | undefined) => {
@@ -92,17 +118,28 @@ export default function Home() {
 				}
 			)
 
-			gsap.fromTo(
-				element,
-				{ y: 100 },
+			const mm = gsap.matchMedia()
+			const breakPoint = 1024
+
+			mm.add(
 				{
-					y: -100,
-					scrollTrigger: {
-						markers: false,
-						trigger: element,
-						start: 'top bottom',
-						scrub: true,
-					},
+					isDesktop: `(min-width: ${breakPoint}px)`,
+					isMobile: `(max-width: ${breakPoint - 1}px)`,
+				},
+				({ isDesktop }) => {
+					gsap.fromTo(
+						element,
+						{ y: isDesktop ? 100 : '5vh' },
+						{
+							y: isDesktop ? -100 : '-5vh',
+							scrollTrigger: {
+								markers: false,
+								trigger: element,
+								start: 'top bottom',
+								scrub: true,
+							},
+						}
+					)
 				}
 			)
 		}
@@ -122,24 +159,17 @@ export default function Home() {
 		return currentYear === targetYear ? 'этом' : 'следующем'
 	}
 
-	useEffect(() => {
-		if (!isSlideShowComplete) return
-
-		lenis?.start()
-		lenis?.scrollTo(window.innerHeight / 1.5, {
-			duration: 1.5, // Продолжительность прокрутки
-			easing: (t: number) => Math.min(1, Math.sqrt(1 - Math.pow(t - 1, 2))),
-		})
-	}, [lenis, isSlideShowComplete])
-
 	return (
-		<ReactLenis root options={{ syncTouch: true, smoothWheel: true }}>
+		<ReactLenis
+			root
+			options={{ syncTouch: true, smoothWheel: true, touchMultiplier: 0 }}
+		>
 			<Loader />
 			<div ref={containerRef} className='relative bg-stone-50 z-10 '>
 				<div className='relative z-20'>
 					<SlideShow totalImages={6} />
 					<Block className='py-10'>
-						<Text className='py-20'>
+						<Text className='py-10 xl:py-20'>
 							<Heading
 								text='Dear Guests!'
 								ref={el => addToSlideRefs(1, 'heading', el)}
@@ -157,7 +187,7 @@ export default function Home() {
 							alt=''
 							width={2560}
 							height={1440}
-							className='w-full h-[90dvh] max-h-[800px] object-cover object-left rounded-t-full'
+							className='w-full h-[90vh] max-w-md mx-auto lg:max-h-[800px] object-cover object-left rounded-t-full'
 							ref={el => addToSlideRefs(1, 'image', el)}
 						/>
 					</Block>
@@ -170,11 +200,56 @@ export default function Home() {
 								ref={el => addToSlideRefs(2, 'heading', el)}
 							/>
 							<Paragraph
-								size='text-5xl'
-								className='text-center'
+								customSize
+								className='text-center text-4xl md:text-5xl whitespace-nowrap'
 								ref={el => addToSlideRefs(2, 'text', el)}
 							>
-								11.06.2025
+								<span>
+									<LetterFx
+										speed='slow'
+										trigger='custom'
+										duration={2500}
+										onTrigger={triggerFn1 => {
+											letterFxTriggerRef1.current = triggerFn1
+										}}
+									>
+										1
+									</LetterFx>
+									<LetterFx
+										speed='slow'
+										trigger='custom'
+										duration={2000}
+										onTrigger={triggerFn2 => {
+											letterFxTriggerRef2.current = triggerFn2
+										}}
+									>
+										1
+									</LetterFx>
+								</span>
+								<span>
+									.
+									<LetterFx
+										speed='slow'
+										trigger='custom'
+										duration={1500}
+										onTrigger={triggerFn3 => {
+											letterFxTriggerRef3.current = triggerFn3
+										}}
+									>
+										0
+									</LetterFx>
+									<LetterFx
+										speed='slow'
+										trigger='custom'
+										duration={1000}
+										onTrigger={triggerFn4 => {
+											letterFxTriggerRef4.current = triggerFn4
+										}}
+									>
+										6
+									</LetterFx>
+									.2025
+								</span>
 							</Paragraph>
 						</Text>
 					</Block>

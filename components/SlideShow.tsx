@@ -19,14 +19,42 @@ const SlideShow: FC<SlideShowProps> = ({
 	const { loaded, setLoaded, setProgress } = useLoaderStore()
 	const [currentImage, setCurrentImage] = useState(0)
 	const [startSlideshow, setStartSlideshow] = useState(false)
-	const [isLocalComplete, setIsLocalComplete] = useState(false) // Локальное состояние завершения
+	const [isLocalComplete, setIsLocalComplete] = useState(false)
+	const [isPortrait, setIsPortrait] = useState(false) // Определяем ориентацию
 	const { setIsSlideShowComplete } = useSlideShowStore()
 
-	const imageUrls = useMemo(
+	// Генерируем URL для изображений
+	const landscapeUrls = useMemo(
 		() =>
-			Array.from({ length: totalImages }, (_, i) => `/img/loader-${i + 1}.jpg`),
+			Array.from(
+				{ length: totalImages },
+				(_, i) => `/img/slide_show/landscape/loader-${i + 1}.jpg`
+			),
 		[totalImages]
 	)
+	const portraitUrls = useMemo(
+		() =>
+			Array.from(
+				{ length: totalImages },
+				(_, i) => `/img/slide_show/portrait/loader-${i + 1}.jpg`
+			),
+		[totalImages]
+	)
+
+	// Активный набор изображений в зависимости от ориентации
+	const imageUrls = isPortrait ? portraitUrls : landscapeUrls
+
+	// Определяем текущую ориентацию экрана
+	useEffect(() => {
+		const updateOrientation = () => {
+			setIsPortrait(window.matchMedia('(orientation: portrait)').matches)
+		}
+
+		updateOrientation() // Устанавливаем начальное значение
+		window.addEventListener('resize', updateOrientation)
+
+		return () => window.removeEventListener('resize', updateOrientation)
+	}, [])
 
 	// Предзагрузка изображений с отслеживанием прогресса
 	useEffect(() => {
@@ -112,9 +140,10 @@ const SlideShow: FC<SlideShowProps> = ({
 						key={src}
 						src={src}
 						alt={`SlideShow ${index + 1}`}
-						width={2560}
-						height={1440}
-						className={`absolute inset-0 grayscale w-full h-full object-cover object-center transition-opacity duration-500 ${
+						objectFit='cover'
+						objectPosition='center'
+						fill
+						className={`absolute inset-0 grayscale w-full h-full transition-opacity duration-500 ${
 							index === currentImage ? 'block' : 'hidden'
 						}`}
 						priority
