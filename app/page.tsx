@@ -11,15 +11,17 @@ import '../styles/global.scss'
 
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ReactLenis } from '@studio-freight/react-lenis'
+import { ReactLenis, useLenis } from '@studio-freight/react-lenis'
 import Loader from '@/components/Loader'
 import SlideShow from '@/components/SlideShow'
+import useSlideShowStore from '@/store/slideShow.store'
 import LetterFx from '@/lib/LetterFX'
 
 gsap.registerPlugin(ScrollTrigger)
 
 export default function Home() {
 	const [isMapLoaded, setIsMapLoaded] = useState(false)
+	const { isSlideShowComplete } = useSlideShowStore()
 	const slideRefs = useRef<
 		Record<
 			number,
@@ -36,6 +38,7 @@ export default function Home() {
 	const letterFxTriggerRef2 = useRef<() => void>()
 	const letterFxTriggerRef3 = useRef<() => void>()
 	const letterFxTriggerRef4 = useRef<() => void>()
+	const lenis = useLenis()
 
 	// Универсальная функция для добавления рефов
 	const addToSlideRefs = (
@@ -150,6 +153,15 @@ export default function Home() {
 		const currentYear = new Date().getFullYear()
 		return currentYear === targetYear ? 'этом' : 'следующем'
 	}
+
+	useEffect(() => {
+		if (!isSlideShowComplete || lenis?.scroll >= 20) return
+
+		lenis?.scrollTo(window.innerHeight / 1.5, {
+			duration: 1.5,
+			easing: (t: number) => Math.min(1, Math.sqrt(1 - Math.pow(t - 1, 2))),
+		})
+	}, [lenis, isSlideShowComplete])
 
 	return (
 		<ReactLenis
