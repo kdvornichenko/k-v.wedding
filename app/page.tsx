@@ -54,8 +54,6 @@ export default function Home() {
 	}
 
 	useEffect(() => {
-		window.scrollTo(0, 0)
-
 		setIsMapLoaded(true)
 
 		const textElement = slideRefs.current[2]?.text // Убедитесь, что это правильный элемент
@@ -213,22 +211,23 @@ export default function Home() {
 										speed='slow'
 										trigger='custom'
 										duration={2500}
+										initialText='0'
+										finalText='1'
 										onTrigger={triggerFn1 => {
 											letterFxTriggerRef1.current = triggerFn1
 										}}
-									>
-										1
-									</LetterFx>
+									/>
+
 									<LetterFx
 										speed='slow'
 										trigger='custom'
 										duration={2000}
+										initialText='0'
+										finalText='1'
 										onTrigger={triggerFn2 => {
 											letterFxTriggerRef2.current = triggerFn2
 										}}
-									>
-										1
-									</LetterFx>
+									/>
 								</span>
 								<span>
 									.
@@ -236,22 +235,22 @@ export default function Home() {
 										speed='slow'
 										trigger='custom'
 										duration={1500}
+										initialText='0'
+										finalText='0'
 										onTrigger={triggerFn3 => {
 											letterFxTriggerRef3.current = triggerFn3
 										}}
-									>
-										0
-									</LetterFx>
+									/>
 									<LetterFx
 										speed='slow'
 										trigger='custom'
 										duration={1000}
+										initialText='0'
+										finalText='6'
 										onTrigger={triggerFn4 => {
 											letterFxTriggerRef4.current = triggerFn4
 										}}
-									>
-										6
-									</LetterFx>
+									/>
 									.2025
 								</span>
 							</Paragraph>

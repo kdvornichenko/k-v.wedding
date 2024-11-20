@@ -1,13 +1,6 @@
 'use client'
 
-import React, {
-	useState,
-	useRef,
-	useCallback,
-	useEffect,
-	forwardRef,
-	ReactNode,
-} from 'react'
+import React, { useState, useRef, useMemo, useEffect, forwardRef, useCallback } from 'react'
 import classNames from 'classnames'
 
 const defaultAllowedCharacters = [
@@ -34,10 +27,11 @@ function getRandomCharacter(charset: string[]): string {
 }
 
 function createEventHandler(
-	originalText: string,
+	initialText: string,
+	finalText: string,
 	setText: React.Dispatch<React.SetStateAction<string>>,
-	inProgress: boolean,
 	setInProgress: React.Dispatch<React.SetStateAction<boolean>>,
+	getInProgress: () => boolean,
 	speed: 'fast' | 'medium' | 'slow',
 	charset: string[],
 	setHasAnimated?: React.Dispatch<React.SetStateAction<boolean>>,
@@ -57,29 +51,31 @@ function createEventHandler(
 		speedSettings[speed]
 
 	const generateRandomText = () =>
-		originalText
+		finalText
 			.split('')
 			.map(char => (char === ' ' ? ' ' : getRandomCharacter(charset)))
 			.join('')
 
 	return async () => {
-		if (inProgress) return
+		if (getInProgress()) return
 
 		setInProgress(true)
 
 		let randomizedText = generateRandomText()
 		const endTime = Date.now() + INITIAL_RANDOM_DURATION
 
+		// Фаза случайных символов
 		while (Date.now() < endTime) {
 			setText(randomizedText)
 			await new Promise(resolve => setTimeout(resolve, BASE_DELAY))
 			randomizedText = generateRandomText()
 		}
 
-		for (let i = 0; i < originalText.length; i++) {
+		// Фаза раскрытия
+		for (let i = 0; i < finalText.length; i++) {
 			await new Promise(resolve => setTimeout(resolve, REVEAL_DELAY))
 			setText(
-				`${originalText.substring(0, i + 1)}${randomizedText.substring(i + 1)}`
+				`${finalText.substring(0, i + 1)}${randomizedText.substring(i + 1)}`
 			)
 		}
 
@@ -91,7 +87,8 @@ function createEventHandler(
 }
 
 type LetterFxProps = {
-	children: ReactNode
+	initialText: string // Начальный текст
+	finalText: string // Финальный текст
 	trigger?: 'hover' | 'instant' | 'custom'
 	speed?: 'fast' | 'medium' | 'slow'
 	charset?: string[]
@@ -104,7 +101,8 @@ type LetterFxProps = {
 const LetterFx = forwardRef<HTMLSpanElement, LetterFxProps>(
 	(
 		{
-			children,
+			initialText,
+			finalText,
 			trigger = 'hover',
 			speed = 'medium',
 			charset = defaultAllowedCharacters,
@@ -115,40 +113,47 @@ const LetterFx = forwardRef<HTMLSpanElement, LetterFxProps>(
 		},
 		ref
 	) => {
-		const [text, setText] = useState<string>(
-			typeof children === 'string' ? children : ''
-		)
+		const [text, setText] = useState<string>(initialText)
 		const [inProgress, setInProgress] = useState<boolean>(false)
+		const inProgressRef = useRef<boolean>(false)
 		const [hasAnimated, setHasAnimated] = useState<boolean>(false)
-		const originalText = useRef<string>(
-			typeof children === 'string' ? children : ''
-		)
 
-		const eventHandler = useCallback(
-			createEventHandler(
-				originalText.current,
-				setText,
-				inProgress,
-				setInProgress,
-				speed,
-				charset,
-				trigger === 'instant' ? setHasAnimated : undefined,
-				duration
-			),
-			[inProgress, trigger, speed, charset]
-		)
-
+		// Обновляем inProgressRef при изменении inProgress
 		useEffect(() => {
-			if (typeof children === 'string') {
-				setText(children)
-				originalText.current = children
+			inProgressRef.current = inProgress
+		}, [inProgress])
 
-				if (trigger === 'instant' && !hasAnimated) {
+		const getInProgress = useCallback(() => inProgressRef.current, [])
+
+		const eventHandler = useMemo(
+			() =>
+				createEventHandler(
+					initialText,
+					finalText,
+					setText,
+					setInProgress,
+					getInProgress,
+					speed,
+					charset,
+					trigger === 'instant' ? setHasAnimated : undefined,
+					duration
+				),
+			[initialText, finalText, trigger, speed, charset, duration]
+		)
+
+		// Инициализируем текст и запускаем анимацию при необходимости
+		useEffect(() => {
+			if (!hasAnimated) {
+				setText(initialText)
+
+				if (trigger === 'instant') {
 					eventHandler()
 				}
 			}
-		}, [children, trigger, eventHandler, hasAnimated])
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+		}, [initialText, trigger])
 
+		// Передаем eventHandler через onTrigger
 		useEffect(() => {
 			if (trigger === 'custom' && onTrigger) {
 				onTrigger(eventHandler)
