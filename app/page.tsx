@@ -52,6 +52,8 @@ export default function Home() {
 	}
 
 	useEffect(() => {
+		window.scrollTo(0, 0)
+
 		setIsMapLoaded(true)
 
 		const textElement = slideRefs.current[2]?.text // Убедитесь, что это правильный элемент
@@ -90,15 +92,6 @@ export default function Home() {
 			ScrollTrigger.killAll() // Удаляем триггер при размонтировании
 		}
 	}, [])
-
-	useEffect(() => {
-		onLenisLoad()
-	}, [lenis])
-
-	const onLenisLoad = () => {
-		window.scrollTo(0, 0)
-		lenis?.stop()
-	}
 
 	useEffect(() => {
 		const animateElement = (element: HTMLElement | undefined) => {

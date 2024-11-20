@@ -19,7 +19,7 @@ const Loader = () => {
 				loaded ? 'opacity-0' : 'opacity-100'
 			}`}
 		>
-			<Heading text={`Loading ${progress}%`} className='leading-relaxed' />
+			<Heading text={`Loading ${progress}%`} className='!leading-loose' />
 		</div>
 	)
 }
