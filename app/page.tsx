@@ -36,7 +36,6 @@ export default function Home() {
 	const letterFxTriggerRef2 = useRef<() => void>()
 	const letterFxTriggerRef3 = useRef<() => void>()
 	const letterFxTriggerRef4 = useRef<() => void>()
-	const lenis = useLenis()
 
 	// Универсальная функция для добавления рефов
 	const addToSlideRefs = (
