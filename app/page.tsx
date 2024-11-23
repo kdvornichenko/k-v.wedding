@@ -137,6 +137,7 @@ export default function Home() {
 						.to(fingerRef.current, {
 							opacity: 0,
 							duration: 1,
+							y: '-50%',
 						})
 				},
 				once: true,
