@@ -18,7 +18,11 @@ import {
 import MapPin from './MapPin'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { LngLat, VectorCustomization, YMap as YMapInstance } from '@yandex/ymaps3-types'
+import {
+	LngLat,
+	VectorCustomization,
+	YMap as YMapInstance,
+} from '@yandex/ymaps3-types'
 import theme from '@/public/customization.json'
 
 type TMap = {
@@ -70,7 +74,7 @@ const Map = forwardRef<HTMLDivElement, TMap>(({ className }, ref) => {
 				setTimeout(() => {
 					mapInstance.setLocation({
 						center: params.center as LngLat,
-						zoom: 9,
+						zoom: 8.5,
 						duration: params.zoomDuration,
 						easing: 'ease-in-out',
 					})

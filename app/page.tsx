@@ -16,6 +16,7 @@ import Loader from '@/components/Loader'
 import SlideShow from '@/components/SlideShow'
 import useSlideShowStore from '@/store/slideShow.store'
 import LetterFx from '@/lib/LetterFX'
+import { Finger } from '@/components/ui/icons'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -34,6 +35,8 @@ export default function Home() {
 		>
 	>({})
 	const containerRef = useRef<HTMLDivElement>(null)
+	const addressRef = useRef<HTMLAnchorElement>(null)
+	const fingerRef = useRef<SVGSVGElement>(null)
 	const letterFxTriggerRef1 = useRef<() => void>()
 	const letterFxTriggerRef2 = useRef<() => void>()
 	const letterFxTriggerRef3 = useRef<() => void>()
@@ -70,7 +73,7 @@ export default function Home() {
 		if (textElement) {
 			ScrollTrigger.create({
 				trigger: textElement,
-				start: 'bottom bottom', // Когда элемент достигает низа области видимости
+				start: 'bottom bottom',
 				onEnter: () => {
 					const letters = [
 						letterFxTriggerRef1,
@@ -80,8 +83,61 @@ export default function Home() {
 					]
 
 					letters.forEach(item => {
-						item.current?.() // Вызываем функцию анимации, если она существует
+						item.current?.()
 					})
+				},
+				once: true,
+			})
+		}
+
+		if (addressRef && fingerRef) {
+			ScrollTrigger.create({
+				trigger: addressRef.current,
+				start: 'top 60%',
+				markers: false,
+				onEnter: () => {
+					gsap
+						.timeline()
+						.to(
+							addressRef.current,
+							{
+								borderColor: 'rgb(2 6 23 / 1)',
+								duration: 1,
+								ease: 'power1.inOut',
+							},
+							'>'
+						)
+						.to(
+							fingerRef.current,
+							{
+								opacity: 1,
+								delay: 0.5,
+								y: 0,
+								duration: 0.5,
+								ease: 'power1.inOut',
+							},
+							'>'
+						)
+						.to(
+							[addressRef.current, fingerRef.current],
+							{
+								scale: 0.98,
+								duration: 0.2,
+							},
+							'>'
+						)
+						.to(
+							[addressRef.current, fingerRef.current],
+							{
+								scale: 1,
+								duration: 0.2,
+							},
+							'>'
+						)
+						.to(fingerRef.current, {
+							opacity: 0,
+							duration: 1,
+						})
 				},
 				once: true,
 			})
@@ -275,13 +331,25 @@ export default function Home() {
 								рыбалка&quot;
 								<br />
 								<span className='font-semibold'>
-									По адресу: Пос. Комарово, Приморское шоссе, 452 А,
+									По адресу:
+									<a
+										href='https://yandex.ru/maps/2/saint-petersburg/?ll=29.818303%2C60.170111&mode=routes&rtext=~60.170556%2C29.813107&rtt=taxi&ruri=~ymapsbm1%3A%2F%2Forg%3Foid%3D1059804378&z=17'
+										target='_blank'
+										ref={addressRef}
+										className=' border px-1 pb-1 border-slate-950/0 rounded-md relative inline-block translate-y-0.5  will-change-transform'
+									>
+										Пос. Комарово, Приморское шоссе, 452 А
+										<Finger
+											ref={fingerRef}
+											className='absolute w-8 h-8 end-4 top-1/2 translate-y-1/2 opacity-0 will-change-transform'
+										/>
+									</a>
 									<br />
 									банкетный зал &quot;Летний&quot;
 								</span>
 							</Paragraph>
 							<Map
-								className='opacity-0 w-full h-[50vh] rounded-3xl overflow-hidden mt-10'
+								className='opacity-0 w-full portrait:h-[60vh] h-[50vh] rounded-3xl overflow-hidden mt-10 will-change-transform'
 								ref={getRefFunction(3, 'map')}
 							/>
 						</Text>

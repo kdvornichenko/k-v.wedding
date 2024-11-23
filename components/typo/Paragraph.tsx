@@ -13,7 +13,7 @@ const Paragraph = forwardRef<HTMLParagraphElement, Props>(
 		return (
 			<p
 				ref={ref} // Передаем ref в элемент <p>
-				className={`font-gyre-mono ${className || ''} ${
+				className={`font-gyre-mono will-change-transform ${className || ''} ${
 					customSize || 'text-2xl sm:text-3xl'
 				}`}
 			>
