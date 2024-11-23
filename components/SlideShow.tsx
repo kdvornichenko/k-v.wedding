@@ -10,7 +10,7 @@ type SlideShowProps = {
 	interval?: number
 }
 
-const SlideShow: FC<SlideShowProps> = ({ totalImages, interval = 300 }) => {
+const SlideShow: FC<SlideShowProps> = ({ totalImages, interval = 1000 }) => {
 	const { loaded, setLoaded, setProgress } = useLoaderStore()
 	const [currentImage, setCurrentImage] = useState(0)
 	const [startSlideshow, setStartSlideshow] = useState(false)
