@@ -124,7 +124,7 @@ const SlideShow: FC<SlideShowProps> = ({ totalImages, interval = 1000 }) => {
 
 	return (
 		<div
-			className={`relative w-full h-screen duration-1000 delay-500 ${
+			className={`relative w-full h-svh duration-1000 delay-500 ${
 				loaded ? 'opacity-100' : 'opacity-0'
 			}`}
 		>
