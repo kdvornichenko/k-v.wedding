@@ -138,7 +138,7 @@ const LetterFx = forwardRef<HTMLSpanElement, LetterFxProps>(
 					trigger === 'instant' ? setHasAnimated : undefined,
 					duration
 				),
-			[initialText, finalText, trigger, speed, charset, duration]
+			[initialText, finalText, trigger, speed, charset, duration, getInProgress]
 		)
 
 		// Инициализируем текст и запускаем анимацию при необходимости

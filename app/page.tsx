@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Block from '@/components/Block'
-import Map from '@/components/Map'
+import Map from '@/components/Map/Map'
 import Text from '@/components/Text'
 import Heading from '@/components/typo/Heading'
 import Paragraph from '@/components/typo/Paragraph'
@@ -22,7 +22,7 @@ gsap.registerPlugin(ScrollTrigger)
 export default function Home() {
 	const [isMapLoaded, setIsMapLoaded] = useState(false)
 	const { isSlideShowComplete } = useSlideShowStore()
-	const slideRefs = useRef<
+	const screenRefs = useRef<
 		Record<
 			number,
 			{
@@ -40,23 +40,32 @@ export default function Home() {
 	const letterFxTriggerRef4 = useRef<() => void>()
 	const lenis = useLenis()
 
-	// Универсальная функция для добавления рефов
-	const addToSlideRefs = (
-		index: number,
-		type: 'heading' | 'text' | 'image' | 'map',
-		el: HTMLElement | null
-	): void => {
-		if (!el) return
-		if (!slideRefs.current[index]) {
-			slideRefs.current[index] = {}
-		}
-		slideRefs.current[index][type] = el
-	}
+	const refFunctions = useRef<Record<string, (el: HTMLElement | null) => void>>(
+		{}
+	)
+
+	// Универсальная функция для получения функции рефа
+	const getRefFunction = useCallback(
+		(index: number, type: 'heading' | 'text' | 'image' | 'map') => {
+			const key = `${index}-${type}`
+			if (!refFunctions.current[key]) {
+				refFunctions.current[key] = (el: HTMLElement | null) => {
+					if (!el) return
+					if (!screenRefs.current[index]) {
+						screenRefs.current[index] = {}
+					}
+					screenRefs.current[index][type] = el
+				}
+			}
+			return refFunctions.current[key]
+		},
+		[]
+	)
 
 	useEffect(() => {
 		setIsMapLoaded(true)
 
-		const textElement = slideRefs.current[2]?.text // Убедитесь, что это правильный элемент
+		const textElement = screenRefs.current[2]?.text // Убедитесь, что это правильный элемент
 
 		if (textElement) {
 			ScrollTrigger.create({
@@ -137,7 +146,7 @@ export default function Home() {
 			)
 		}
 
-		Object.entries(slideRefs.current).forEach(([, refs]) => {
+		Object.entries(screenRefs.current).forEach(([, refs]) => {
 			if (!refs) return
 
 			animateElement(refs.heading)
@@ -172,11 +181,8 @@ export default function Home() {
 					<SlideShow totalImages={6} />
 					<Block className='py-10'>
 						<Text className='py-10 xl:py-20'>
-							<Heading
-								text='Dear Guests!'
-								ref={el => addToSlideRefs(1, 'heading', el)}
-							/>
-							<Paragraph ref={el => addToSlideRefs(1, 'text', el)}>
+							<Heading text='Dear Guests!' ref={getRefFunction(1, 'heading')} />
+							<Paragraph ref={getRefFunction(1, 'text')}>
 								<>
 									Один день в {getYearPhrase()} году станет для нас особенно
 									важным, и мы хотим провести его в кругу близких и друзей!
@@ -190,7 +196,7 @@ export default function Home() {
 							width={2560}
 							height={1440}
 							className='w-full h-[90vh] max-w-md mx-auto lg:max-h-[800px] object-cover object-left rounded-t-full'
-							ref={el => addToSlideRefs(1, 'image', el)}
+							ref={getRefFunction(1, 'image')}
 						/>
 					</Block>
 
@@ -199,12 +205,12 @@ export default function Home() {
 							<Heading
 								text='When?'
 								className='text-center'
-								ref={el => addToSlideRefs(2, 'heading', el)}
+								ref={getRefFunction(2, 'heading')}
 							/>
 							<Paragraph
 								customSize
 								className='text-center text-4xl md:text-5xl whitespace-nowrap'
-								ref={el => addToSlideRefs(2, 'text', el)}
+								ref={getRefFunction(2, 'text')}
 							>
 								<span>
 									<LetterFx
@@ -261,13 +267,10 @@ export default function Home() {
 						<Text>
 							<Heading
 								text='Where?'
-								ref={el => addToSlideRefs(3, 'heading', el)}
+								ref={getRefFunction(3, 'heading')}
 								className='opacity-0'
 							/>
-							<Paragraph
-								ref={el => addToSlideRefs(3, 'text', el)}
-								className='opacity-0'
-							>
+							<Paragraph ref={getRefFunction(3, 'text')} className='opacity-0'>
 								Наш праздник пройдет в&nbsp;ресторане &quot;Русская
 								рыбалка&quot;
 								<br />
@@ -277,12 +280,10 @@ export default function Home() {
 									банкетный зал &quot;Летний&quot;
 								</span>
 							</Paragraph>
-							{isMapLoaded && (
-								<Map
-									className='opacity-0 w-full h-[50vh] rounded-3xl overflow-hidden mt-10'
-									ref={el => addToSlideRefs(3, 'map', el)}
-								/>
-							)}
+							<Map
+								className='opacity-0 w-full h-[50vh] rounded-3xl overflow-hidden mt-10'
+								ref={getRefFunction(3, 'map')}
+							/>
 						</Text>
 					</Block>
 
@@ -291,7 +292,7 @@ export default function Home() {
 							<Heading
 								text='Plan of the Day'
 								className='text-center'
-								ref={el => addToSlideRefs(4, 'heading', el)}
+								ref={getRefFunction(4, 'heading')}
 							/>
 						</Text>
 					</Block>

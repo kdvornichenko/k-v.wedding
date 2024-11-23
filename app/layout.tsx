@@ -21,7 +21,9 @@ const gyreMono = localFont({
 
 export const metadata: Metadata = {
 	title: 'Кирилл & Вика - Приглашение на свадьбу',
-	description: 'Привет, друг! Мы будем рады видеть тебя на нашей свадьбе!',
+	description:
+		'Тут должно быть описание, но я не его не придумал, поэтому просто - Welcome to our wedding!',
+	robots: 'noindex, nofollow',
 }
 
 export default function RootLayout({

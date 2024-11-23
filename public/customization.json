@@ -6828,13 +6828,12 @@
     {
         "tags": {
             "any": [
-                "transit"
-            ]
+                "terrain",
+                "bathymetry",
+                "landscape"
+            ],
+            "none": "land"
         },
-        "elements": [
-            "label.icon",
-            "label.text"
-        ],
         "stylers": {
             "visibility": "off"
         }
@@ -6842,25 +6841,47 @@
     {
         "tags": {
             "any": [
-                "outdoor",
                 "park",
-                "cemetery",
-                "medical"
+                "cemetery"
             ]
         },
-        "elements": "label",
         "stylers": {
             "visibility": "off"
         }
     },
     {
         "tags": {
-            "any": "poi",
+            "any": [
+                "vegetation"
+            ]
+        },
+        "stylers": {
+            "visibility": "off"
+        }
+    },
+    {
+        "tags": {
+            "any": [
+                "industrial",
+                "construction_site",
+                "medical",
+                "sports_ground",
+                "beach"
+            ]
+        },
+        "types": "polygon",
+        "stylers": {
+            "visibility": "off"
+        }
+    },
+    {
+        "tags": {
+            "any": "transit",
             "none": [
-                "outdoor",
-                "park",
-                "cemetery",
-                "medical"
+                "transit_location",
+                "transit_line",
+                "transit_schema",
+                "is_unclassified_transit"
             ]
         },
         "stylers": {
@@ -6869,19 +6890,16 @@
     },
     {
         "tags": {
-            "any": "road"
-        },
-        "types": "point",
-        "stylers": {
-            "visibility": "off"
-        }
-    },
-    {
-        "tags": {
-            "any": [
-                "food_and_drink",
-                "shopping",
-                "commercial_services"
+            "any": "urban_area",
+            "none": [
+                "residential",
+                "industrial",
+                "cemetery",
+                "park",
+                "medical",
+                "sports_ground",
+                "beach",
+                "construction_site"
             ]
         },
         "stylers": {
@@ -6924,25 +6942,6 @@
             ]
         },
         "elements": "label.icon",
-        "stylers": {
-            "visibility": "off"
-        }
-    },
-    {
-        "elements": "label.text",
-        "tags": {
-            "none": [
-                "poi",
-                "transit"
-            ]
-        },
-        "stylers": {
-            "visibility": "off"
-        }
-    },
-    {
-        "tags": "locality",
-        "elements": "label",
         "stylers": {
             "visibility": "off"
         }

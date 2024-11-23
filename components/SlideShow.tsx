@@ -8,14 +8,9 @@ import useSlideShowStore from '@/store/slideShow.store'
 type SlideShowProps = {
 	totalImages: number
 	interval?: number
-	onComplete?: () => void
 }
 
-const SlideShow: FC<SlideShowProps> = ({
-	totalImages,
-	interval = 1200,
-	onComplete,
-}) => {
+const SlideShow: FC<SlideShowProps> = ({ totalImages, interval = 300 }) => {
 	const { loaded, setLoaded, setProgress } = useLoaderStore()
 	const [currentImage, setCurrentImage] = useState(0)
 	const [startSlideshow, setStartSlideshow] = useState(false)
@@ -124,9 +119,8 @@ const SlideShow: FC<SlideShowProps> = ({
 	useEffect(() => {
 		if (isLocalComplete) {
 			setIsSlideShowComplete(true)
-			onComplete?.()
 		}
-	}, [isLocalComplete, setIsSlideShowComplete, onComplete])
+	}, [isLocalComplete, setIsSlideShowComplete])
 
 	return (
 		<div
@@ -140,10 +134,9 @@ const SlideShow: FC<SlideShowProps> = ({
 						key={src}
 						src={src}
 						alt={`SlideShow ${index + 1}`}
-						objectFit='cover'
-						objectPosition='center'
 						fill
-						className={`absolute inset-0 grayscale w-full h-full transition-opacity duration-500 ${
+						sizes='100vw'
+						className={`absolute inset-0 object-cover object-center grayscale w-full h-full transition-opacity duration-500 ${
 							index === currentImage ? 'block' : 'hidden'
 						}`}
 						priority
