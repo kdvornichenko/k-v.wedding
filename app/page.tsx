@@ -272,7 +272,11 @@ export default function Home() {
 
 					<Block noGrid className='flex items-center justify-center'>
 						<Text>
-							<Heading text='When?' ref={getRefFunction(2, 'heading')} />
+							<Heading
+								text='When?'
+								ref={getRefFunction(2, 'heading')}
+								className='text-center'
+							/>
 							<Paragraph
 								customSize
 								className='text-center text-4xl md:text-5xl whitespace-nowrap'
@@ -365,7 +369,11 @@ export default function Home() {
 						noGrid
 						className='flex flex-col items-center justify-center gap-y-10'
 					>
-						<Heading text='Dress-code' ref={getRefFunction(9, 'heading')} />
+						<Heading
+							text='Dress-code'
+							ref={getRefFunction(9, 'heading')}
+							className='text-center'
+						/>
 						<Paragraph className='text-center' ref={getRefFunction(9, 'text')}>
 							Мы&nbsp;будем признательны, если вы&nbsp;поддержите цветовую гамму
 							нашей свадьбы в&nbsp;своих нарядах.
