@@ -16,7 +16,14 @@ import Loader from '@/components/Loader'
 import SlideShow from '@/components/SlideShow'
 import useSlideShowStore from '@/store/slideShow.store'
 import LetterFx from '@/lib/LetterFX'
-import { Finger } from '@/components/ui/icons'
+import { Finger } from '@/components/icons/IconFinger'
+import { Location } from '@/components/icons/IconLocation'
+import { Rings } from '@/components/icons/IconRings'
+import { Dinner } from '@/components/icons/IconDinner'
+import { Cake } from '@/components/icons/IconCake'
+import { Clock } from '@/components/icons/IconClock'
+import PlanItem from '@/components/PlanItem'
+import Color from '@/components/Color'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -31,6 +38,8 @@ export default function Home() {
 				text?: HTMLElement
 				image?: HTMLElement
 				map?: HTMLElement
+				plan?: HTMLElement
+				block?: HTMLElement
 			}
 		>
 	>({})
@@ -49,7 +58,10 @@ export default function Home() {
 
 	// Универсальная функция для получения функции рефа
 	const getRefFunction = useCallback(
-		(index: number, type: 'heading' | 'text' | 'image' | 'map') => {
+		(
+			index: number,
+			type: 'heading' | 'text' | 'image' | 'map' | 'plan' | 'block'
+		) => {
 			const key = `${index}-${type}`
 			if (!refFunctions.current[key]) {
 				refFunctions.current[key] = (el: HTMLElement | null) => {
@@ -112,7 +124,7 @@ export default function Home() {
 							{
 								opacity: 1,
 								delay: 0.5,
-								y: 0,
+								y: '-50%',
 								duration: 0.5,
 								ease: 'power1.inOut',
 							},
@@ -135,9 +147,8 @@ export default function Home() {
 							'>'
 						)
 						.to(fingerRef.current, {
-							opacity: 0,
 							duration: 1,
-							y: '50%',
+							y: '-4px',
 						})
 				},
 				once: true,
@@ -171,7 +182,7 @@ export default function Home() {
 						markers: false,
 						trigger: element,
 						start: 'top bottom',
-						end: 'top +=30%',
+						end: 'top +=50%',
 						scrub: true,
 					},
 				}
@@ -210,6 +221,8 @@ export default function Home() {
 			animateElement(refs.text)
 			animateElement(refs.image)
 			animateElement(refs.map)
+			animateElement(refs.plan)
+			animateElement(refs.block)
 		})
 	}, [isMapLoaded])
 
@@ -259,11 +272,7 @@ export default function Home() {
 
 					<Block noGrid className='flex items-center justify-center'>
 						<Text>
-							<Heading
-								text='When?'
-								className='text-center'
-								ref={getRefFunction(2, 'heading')}
-							/>
+							<Heading text='When?' ref={getRefFunction(2, 'heading')} />
 							<Paragraph
 								customSize
 								className='text-center text-4xl md:text-5xl whitespace-nowrap'
@@ -322,11 +331,7 @@ export default function Home() {
 
 					<Block noGrid className='flex flex-col justify-center h-screen'>
 						<Text>
-							<Heading
-								text='Where?'
-								ref={getRefFunction(3, 'heading')}
-								className='opacity-0'
-							/>
+							<Heading text='Where?' ref={getRefFunction(3, 'heading')} />
 							<Paragraph ref={getRefFunction(3, 'text')} className='opacity-0'>
 								Наш праздник пройдет в&nbsp;ресторане &quot;Русская
 								рыбалка&quot;
@@ -342,7 +347,7 @@ export default function Home() {
 										Пос. Комарово, Приморское шоссе, 452 А
 										<Finger
 											ref={fingerRef}
-											className='absolute w-8 h-8 end-4 top-1/2 translate-y-1/2 opacity-0 will-change-transform'
+											className='absolute w-8 h-8 end-4 top-full translate-y-1/2 opacity-0 will-change-transform'
 										/>
 									</a>
 									<br />
@@ -356,14 +361,75 @@ export default function Home() {
 						</Text>
 					</Block>
 
-					<Block noGrid className='flex flex-col justify-center h-screen'>
+					<Block
+						noGrid
+						className='flex flex-col items-center justify-center gap-y-10'
+					>
+						<Heading text='Dress-code' ref={getRefFunction(9, 'heading')} />
+						<Paragraph className='text-center' ref={getRefFunction(9, 'text')}>
+							Мы&nbsp;будем признательны, если вы&nbsp;поддержите цветовую гамму
+							нашей свадьбы в&nbsp;своих нарядах.
+						</Paragraph>
+						<div
+							className='grid grid-cols-2 md:grid-cols-4 items-center justify-center flex-wrap gap-4'
+							ref={getRefFunction(9, 'block')}
+						>
+							<Color color='#677965' />
+							<Color color='#DBDBDB' />
+							<Color color='#F2E3D1' />
+							<Color color='#000000' />
+						</div>
+					</Block>
+
+					<Block
+						noGrid
+						className='flex flex-col justify-center min-h-screen py-40'
+					>
 						<Text>
 							<Heading
 								text='Plan of the Day'
-								className='text-center'
 								ref={getRefFunction(4, 'heading')}
 							/>
 						</Text>
+						<div>
+							<div className='mt-10 lg:mt-16 flex flex-col gap-y-3'>
+								<PlanItem
+									time='15:30'
+									text='Сбор гостей'
+									ref={getRefFunction(4, 'plan')}
+								>
+									<Location className='size-full' />
+								</PlanItem>
+								<PlanItem
+									time='16:00'
+									text='Свадебная церемония'
+									ref={getRefFunction(5, 'plan')}
+								>
+									<Rings className='size-full' />
+								</PlanItem>
+								<PlanItem
+									time='17:00'
+									text='Банкет'
+									ref={getRefFunction(6, 'plan')}
+								>
+									<Dinner className='size-full' />
+								</PlanItem>
+								<PlanItem
+									time='20:30'
+									text='Торт'
+									ref={getRefFunction(7, 'plan')}
+								>
+									<Cake className='size-full' />
+								</PlanItem>
+								<PlanItem
+									time='22:00'
+									text='Завершение вечера'
+									ref={getRefFunction(8, 'plan')}
+								>
+									<Clock className='size-full' />
+								</PlanItem>
+							</div>
+						</div>
 					</Block>
 				</div>
 				<div className='inset-0 pointer-events-none absolute z-10'>

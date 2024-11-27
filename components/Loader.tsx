@@ -1,4 +1,4 @@
-import useLoaderStore from '@/store/loadre.store'
+import useLoaderStore from '@/store/loader.store'
 import Heading from './typo/Heading'
 import { useEffect } from 'react'
 

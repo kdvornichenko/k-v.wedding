@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState, FC } from 'react'
 import Image from 'next/image'
-import useLoaderStore from '@/store/loadre.store'
 import useSlideShowStore from '@/store/slideShow.store'
+import useLoaderStore from '@/store/loader.store'
 
 type SlideShowProps = {
 	totalImages: number
