@@ -24,6 +24,7 @@ import { Cake } from '@/components/icons/IconCake'
 import { Clock } from '@/components/icons/IconClock'
 import PlanItem from '@/components/PlanItem'
 import Color from '@/components/Color'
+import Form from '@/components/Form'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -40,6 +41,7 @@ export default function Home() {
 				map?: HTMLElement
 				plan?: HTMLElement
 				block?: HTMLElement
+				form?: HTMLElement
 			}
 		>
 	>({})
@@ -60,7 +62,7 @@ export default function Home() {
 	const getRefFunction = useCallback(
 		(
 			index: number,
-			type: 'heading' | 'text' | 'image' | 'map' | 'plan' | 'block'
+			type: 'heading' | 'text' | 'image' | 'map' | 'plan' | 'block' | 'form'
 		) => {
 			const key = `${index}-${type}`
 			if (!refFunctions.current[key]) {
@@ -223,6 +225,7 @@ export default function Home() {
 			animateElement(refs.map)
 			animateElement(refs.plan)
 			animateElement(refs.block)
+			animateElement(refs.form)
 		})
 	}, [isMapLoaded])
 
@@ -249,7 +252,8 @@ export default function Home() {
 			<div ref={containerRef} className='relative bg-stone-50 z-10 '>
 				<div className='relative z-20'>
 					<SlideShow totalImages={6} />
-					<Block className='py-10'>
+					{/* Dear Guests! */}
+					<Block grid className='py-10'>
 						<Text className='py-10 xl:py-20'>
 							<Heading text='Dear Guests!' ref={getRefFunction(1, 'heading')} />
 							<Paragraph ref={getRefFunction(1, 'text')}>
@@ -269,8 +273,8 @@ export default function Home() {
 							ref={getRefFunction(1, 'image')}
 						/>
 					</Block>
-
-					<Block noGrid className='flex items-center justify-center'>
+					{/* When? */}
+					<Block className='flex items-center justify-center'>
 						<Text>
 							<Heading
 								text='When?'
@@ -332,8 +336,8 @@ export default function Home() {
 							</Paragraph>
 						</Text>
 					</Block>
-
-					<Block noGrid className='flex flex-col justify-center h-screen'>
+					{/* Where? */}
+					<Block className='flex flex-col justify-center h-screen'>
 						<Text>
 							<Heading text='Where?' ref={getRefFunction(3, 'heading')} />
 							<Paragraph ref={getRefFunction(3, 'text')} className='opacity-0'>
@@ -365,10 +369,8 @@ export default function Home() {
 						</Text>
 					</Block>
 
-					<Block
-						noGrid
-						className='flex flex-col items-center justify-center gap-y-10'
-					>
+					{/* Dress-code */}
+					<Block className='flex flex-col items-center justify-center gap-y-10'>
 						<Heading
 							text='Dress-code'
 							ref={getRefFunction(9, 'heading')}
@@ -389,10 +391,8 @@ export default function Home() {
 						</div>
 					</Block>
 
-					<Block
-						noGrid
-						className='flex flex-col justify-center min-h-screen py-40'
-					>
+					{/* Plan of the Day */}
+					<Block className='flex flex-col justify-center py-40'>
 						<Text>
 							<Heading
 								text='Plan of the Day'
@@ -438,6 +438,20 @@ export default function Home() {
 								</PlanItem>
 							</div>
 						</div>
+					</Block>
+
+					{/* A few questions */}
+					<Block className='flex flex-col justify-center'>
+						<Heading
+							text='A few questions'
+							ref={getRefFunction(10, 'heading')}
+						/>
+						<Paragraph className='mt-4' ref={getRefFunction(10, 'text')}>
+							Пожалуйста, заполните данную анкету до{' '}
+							<span className='underline underline-offset-4'>01.01.2025</span>
+						</Paragraph>
+
+						<Form ref={getRefFunction(10, 'form')} className='mt-4 lg:mt-20' />
 					</Block>
 				</div>
 				<div className='inset-0 pointer-events-none absolute z-10'>
