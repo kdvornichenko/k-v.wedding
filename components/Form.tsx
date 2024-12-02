@@ -104,7 +104,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 			{formItems.map(item => {
 				if (item.type === 'radio') {
 					return (
-						<div>
+						<div key={`group-${item.label}-wrapper`}>
 							<RadioGroup
 								key={`group-${item.label}`}
 								label={item.label}
