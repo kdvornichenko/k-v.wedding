@@ -192,7 +192,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 										),
 										label: cn('text-xl'),
 									}}
-									icon={<Heart color='#677965' />}
+									icon={<Heart color='#DDDDDC' />}
 									value={option.value}
 									onChange={() => handleCheckboxChange(option.value)}
 								>
