@@ -5,18 +5,28 @@ import { RadioGroup, Radio } from '@nextui-org/radio'
 import { cn } from '@nextui-org/theme'
 import { Input } from '@nextui-org/input'
 import { CheckboxGroup, Checkbox } from '@nextui-org/checkbox'
+import { Heart } from './icons/IconHeart'
 type TForm = {
 	className?: string
 }
 
 type TFormItem = {
+	id: string
 	type: 'radio' | 'checkbox' | 'input'
 	label: string
-	options?: Array<{ value: string; text: string; isDefault?: boolean }>
+	options?: Array<{
+		value: string
+		text: string
+		isDefault?: boolean
+		onChange?: (value: string) => void
+	}>
 }
 
 const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 	const [checkboxValues, setCheckboxValues] = useState<string[]>(['nope'])
+	const [selectedRadios, setSelectedRadios] = useState<Record<string, string>>(
+		{}
+	)
 	const labelClassNames = 'text-slate-950 text-2xl lg:text-3xl mb-3'
 
 	const onFormSubmit = async (e: FormEvent) => {
@@ -25,17 +35,22 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 	}
 
 	const formItems: TFormItem[] = [
-		{ type: 'input', label: 'Ваше Имя и Фамилия' },
+		{ id: 'name', type: 'input', label: 'Ваше Имя и Фамилия' },
 		{
+			id: 'attendance',
 			type: 'radio',
 			label: 'Придете?',
 			options: [
 				{ value: 'solo', text: 'Приду один (одна)', isDefault: true },
-				{ value: 'couple', text: 'Приду с половинкой' },
+				{
+					value: 'couple',
+					text: 'Приду с половинкой',
+				},
 				{ value: 'nope', text: 'Не смогу присутствовать (не сможем)' },
 			],
 		},
 		{
+			id: 'transport',
 			type: 'radio',
 			label: 'Как планируете добираться до места свадьбы?',
 			options: [
@@ -44,6 +59,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 			],
 		},
 		{
+			id: 'alcohol',
 			type: 'checkbox',
 			label: 'Алкоголь?',
 			options: [
@@ -72,6 +88,13 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 		})
 	}
 
+	const handleRadioChange = (groupId: string, value: string) => {
+		setSelectedRadios(prevState => ({
+			...prevState,
+			[groupId]: value,
+		}))
+	}
+
 	return (
 		<form
 			ref={ref}
@@ -81,28 +104,50 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 			{formItems.map(item => {
 				if (item.type === 'radio') {
 					return (
-						<RadioGroup
-							key={`group-${item.label}`}
-							label={item.label}
-							classNames={{ label: cn(labelClassNames) }}
-							defaultValue={
-								item.options?.find(option => option.isDefault)?.value
-							}
-						>
-							{item.options?.map(option => (
-								<Radio
-									key={`radio-${item.label}-${option.value}`}
+						<div>
+							<RadioGroup
+								key={`group-${item.label}`}
+								label={item.label}
+								classNames={{ label: cn(labelClassNames) }}
+								defaultValue={
+									item.options?.find(option => option.isDefault)?.value
+								}
+								onValueChange={value => handleRadioChange(item.id, value)}
+							>
+								{item.options?.map(option => (
+									<Radio
+										key={`radio-${item.label}-${option.value}`}
+										classNames={{
+											wrapper: cn(
+												'group-data-[selected=true]:border-slate-950'
+											),
+											control: cn('group-data-[selected=true]:bg-slate-950'),
+											label: cn('text-xl'),
+										}}
+										value={option.value}
+									>
+										{option.text}
+									</Radio>
+								))}
+							</RadioGroup>
+
+							{selectedRadios[item.id] === 'couple' && (
+								<Input
+									key={`input-couple-name`}
+									type='text'
+									variant='underlined'
+									label='Имя и Фамилия Вашей половинки'
+									placeholder=''
+									size='lg'
 									classNames={{
-										wrapper: cn('group-data-[selected=true]:border-slate-950'),
-										control: cn('group-data-[selected=true]:bg-slate-950'),
-										label: cn('text-xl'),
+										inputWrapper:
+											'transition-all border-slate-950 data-[hover=true]:border-slate-950/50 mt-4 lg:mt-6',
+										input: 'text-xl',
+										label: 'text-lg',
 									}}
-									value={option.value}
-								>
-									{option.text}
-								</Radio>
-							))}
-						</RadioGroup>
+								/>
+							)}
+						</div>
 					)
 				}
 
@@ -147,6 +192,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 										),
 										label: cn('text-xl'),
 									}}
+									icon={<Heart color='#677965' />}
 									value={option.value}
 									onChange={() => handleCheckboxChange(option.value)}
 								>
