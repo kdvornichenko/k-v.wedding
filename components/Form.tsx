@@ -1,11 +1,22 @@
 'use client'
 
-import React, { FormEvent, forwardRef, useState } from 'react'
+import React, {
+	FormEvent,
+	forwardRef,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react'
 import { RadioGroup, Radio } from '@nextui-org/radio'
+import { Button } from '@nextui-org/button'
 import { cn } from '@nextui-org/theme'
 import { Input, Textarea } from '@nextui-org/input'
 import { CheckboxGroup, Checkbox } from '@nextui-org/checkbox'
 import { Heart } from './icons/IconHeart'
+import DOMPurify from 'dompurify'
+import axios from 'axios'
+
 type TForm = {
 	className?: string
 }
@@ -22,88 +33,270 @@ type TFormItem = {
 	}>
 }
 
+interface IFormData {
+	name: string
+	coupleName?: string
+	allergies?: string
+	radios: Record<string, string>
+	checkboxValues: Record<string, string[]>
+}
+
 const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
-	const [checkboxValues, setCheckboxValues] = useState<string[]>(['nope'])
+	const sanitizeInput = (input: string) => DOMPurify.sanitize(input)
+
+	const [checkboxValues, setCheckboxValues] = useState<string[]>([
+		'alcohol-nope',
+	])
 	const [selectedRadios, setSelectedRadios] = useState<Record<string, string>>(
 		{}
 	)
-	const labelClassNames =
-		'text-slate-950 text-2xl lg:text-3xl mb-3 after:content-[""]'
+	const [willBeAttended, setWillBeAttended] = useState<boolean>(true)
+	const labelClassNames = useMemo(
+		() => 'text-slate-950 text-2xl lg:text-3xl mb-3 after:content-[""]',
+		[]
+	)
+	const inputClassNames = useMemo(
+		() => 'border-slate-950 data-[hover=true]:border-slate-950/50',
+		[]
+	)
+	const [errors, setErrors] = useState<Record<string, string>>({})
+
+	const formItems: TFormItem[] = useMemo(
+		() => [
+			{ id: 'name', type: 'input', label: 'Ваше Имя и Фамилия' },
+			{
+				id: 'attendance',
+				type: 'radio',
+				label: 'Придете?',
+				options: [
+					{ value: 'solo', text: 'Приду один (одна)', isDefault: true },
+					{
+						value: 'couple',
+						text: 'Приду с половинкой',
+					},
+					{ value: 'nope', text: 'Не смогу присутствовать' },
+				],
+			},
+			{
+				id: 'transport',
+				type: 'radio',
+				label: 'Как планируете добираться до места свадьбы?',
+				options: [
+					{ value: 'transfer', text: 'На нашем трансфере' },
+					{ value: 'self', text: 'Самостоятельно', isDefault: true },
+				],
+			},
+			{
+				id: 'alcohol',
+				type: 'checkbox',
+				label: 'Алкоголь?',
+				options: [
+					{ value: 'red-dry', text: 'Красное сухое' },
+					{ value: 'red-semi-sweet', text: 'Красное полусухое' },
+					{ value: 'white-dry', text: 'Белое сухое' },
+					{ value: 'white-semi-sweet', text: 'Белое полусухое' },
+					{ value: 'champaign', text: 'Шампанское' },
+					{ value: 'nope', text: 'Не пью', isDefault: true },
+				],
+			},
+			{
+				id: 'allergies',
+				type: 'radio',
+				label: 'Есть ли у вас аллергия?',
+				options: [
+					{ value: 'yeap', text: 'Да' },
+					{ value: 'nope', text: 'Нет', isDefault: true },
+				],
+			},
+		],
+		[]
+	)
+
+	const allergiesRef = useRef<HTMLTextAreaElement>(null)
+	const coupleNameRef = useRef<HTMLInputElement>(null)
+	const inputNameRef = useRef<HTMLInputElement>(null)
 
 	const onFormSubmit = async (e: FormEvent) => {
 		e.preventDefault()
-		console.log(e)
+
+		if (validateForm()) {
+			// Функция для получения текста радио по выбранному значению
+			const getRadioText = (groupId: string, value: string): string => {
+				const group = formItems.find(item => item.id === groupId)
+				if (group?.type === 'radio' && group.options) {
+					// Убираем префикс groupId- перед сравнением
+					const cleanedValue = value.replace(`${groupId}-`, '')
+					const option = group.options.find(opt => opt.value === cleanedValue)
+					return option?.text || ''
+				}
+				return ''
+			}
+
+			// Функция для получения текста чекбоксов по значениям
+			const getCheckboxTexts = (values: string[]): Record<string, string[]> => {
+				// Группируем результаты по id каждой группы чекбоксов
+				const groupedCheckboxValues: Record<string, string[]> = {}
+
+				formItems
+					.filter(item => item.type === 'checkbox') // Обрабатываем только чекбокс-группы
+					.forEach(checkboxGroup => {
+						if (checkboxGroup.options) {
+							// Находим значения, относящиеся к текущей группе
+							const groupValues = values
+								.map(value => {
+									const option = checkboxGroup.options?.find(
+										opt => `${checkboxGroup.id}-${opt.value}` === value
+									)
+									return option?.text || ''
+								})
+								.filter(Boolean) // Убираем пустые значения
+
+							// Если есть значения, добавляем их в результирующий объект
+							if (groupValues.length > 0) {
+								groupedCheckboxValues[checkboxGroup.id] = groupValues
+							}
+						}
+					})
+
+				return groupedCheckboxValues
+			}
+
+			// Собираем данные формы
+			const formData = {
+				name: sanitizeInput(inputNameRef.current?.value || ''),
+				coupleName: sanitizeInput(coupleNameRef.current?.value || ''),
+				allergies: sanitizeInput(allergiesRef.current?.value || ''),
+				radios: Object.keys(selectedRadios).reduce((acc, groupId) => {
+					acc[groupId] = getRadioText(groupId, selectedRadios[groupId])
+					return acc
+				}, {} as Record<string, string>),
+				checkboxValues: getCheckboxTexts(checkboxValues),
+			}
+
+			// Здесь ты можешь отправить данные
+			console.log('Отправка формы:', formData)
+			await sendToTelegram(formData)
+		} else {
+			console.log('Форма содержит ошибки!')
+		}
 	}
 
-	const formItems: TFormItem[] = [
-		{ id: 'name', type: 'input', label: 'Ваше Имя и Фамилия' },
-		{
-			id: 'attendance',
-			type: 'radio',
-			label: 'Придете?',
-			options: [
-				{ value: 'solo', text: 'Приду один (одна)', isDefault: true },
-				{
-					value: 'couple',
-					text: 'Приду с половинкой',
-				},
-				{ value: 'nope', text: 'Не смогу присутствовать (не сможем)' },
-			],
-		},
-		{
-			id: 'transport',
-			type: 'radio',
-			label: 'Как планируете добираться до места свадьбы?',
-			options: [
-				{ value: 'transfer', text: 'На нашем трансфере' },
-				{ value: 'self', text: 'Самостоятельно', isDefault: true },
-			],
-		},
-		{
-			id: 'alcohol',
-			type: 'checkbox',
-			label: 'Алкоголь?',
-			options: [
-				{ value: 'red-dry', text: 'Красное сухое' },
-				{ value: 'red-semi-sweet', text: 'Красное полусухое' },
-				{ value: 'white-dry', text: 'Белое сухое' },
-				{ value: 'white-semi-sweet', text: 'Белое полусухое' },
-				{ value: 'champaign', text: 'Шампанское' },
-				{ value: 'nope', text: 'Не пью', isDefault: true },
-			],
-		},
-		{
-			id: 'allergies',
-			type: 'radio',
-			label: 'Есть ли у вас аллергия?',
-			options: [
-				{ value: 'allergies-yeap', text: 'Да' },
-				{ value: 'allergies-nope', text: 'Нет', isDefault: true },
-			],
-		},
-	]
+	const sendToTelegram = async (formData: IFormData) => {
+		const botToken = process.env.NEXT_PUBLIC_TG_API // Замени на токен бота
+		const chatId = process.env.NEXT_PUBLIC_TG_API // Замени на свой chat_id
+		const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`
+
+		// Подготовка текста сообщения
+		const message = `
+		Анкета гостя:
+		Имя: ${formData.name}
+		Половинка: ${formData.coupleName || 'Не указано'}
+		Аллергии: ${formData.allergies || 'Нет'}
+		Радио-группы:
+		${Object.entries(formData.radios)
+			.map(([key, value]) => `- ${key}: ${value}`)
+			.join('\n')}
+		Чекбоксы:
+		${Object.entries(formData.checkboxValues as Record<string, string[]>)
+			.map(
+				([group, values]) =>
+					`- ${group}: ${values.length > 0 ? values.join(', ') : 'Не выбрано'}`
+			)
+			.join('\n')}
+	`
+
+		// Отправка сообщения
+		try {
+			await axios.post(apiUrl, {
+				chat_id: chatId,
+				text: message,
+				parse_mode: 'HTML',
+			})
+		} catch (error) {
+			console.error('Ошибка при отправке в Telegram:', error)
+		}
+	}
+
+	const validateForm = () => {
+		const newErrors: Record<string, string> = {}
+
+		if (!selectedRadios['attendance']) {
+			newErrors['attendance'] = 'Выберите один из вариантов'
+		} else if (!selectedRadios['transport'] && willBeAttended) {
+			newErrors['transport'] = 'Выберите способ транспорта'
+		}
+
+		if (
+			selectedRadios['attendance'] === 'attendance-couple' &&
+			!sanitizeInput(coupleNameRef.current?.value || '').trim().length
+		) {
+			newErrors['attendance'] = 'Заполните имя вашей половинки'
+		}
+
+		if (!checkboxValues.length) {
+			newErrors['alcohol'] = 'Выберите хотя бы один напиток'
+		}
+
+		if (!sanitizeInput(inputNameRef.current?.value || '').trim().length) {
+			newErrors['name'] = 'Заполните ваше имя'
+		}
+
+		if (
+			selectedRadios['allergies'] === 'allergies-yeap' &&
+			!sanitizeInput(allergiesRef.current?.value || '').trim().length
+		) {
+			newErrors['allergies'] = 'Заполните аллергены'
+		}
+
+		setErrors(newErrors)
+		return Object.keys(newErrors).length === 0
+	}
 
 	const handleCheckboxChange = (value: string) => {
 		setCheckboxValues(prevValues => {
-			if (value === 'nope') {
-				// Если выбрано `nope`, оставляем только его
-				return ['nope']
+			if (value === 'alcohol-nope') {
+				return ['alcohol-nope']
 			} else if (prevValues.includes(value)) {
-				// Если значение уже есть, удаляем его
 				return prevValues.filter(v => v !== value)
 			} else {
-				// Убираем `nope` и добавляем новое значение
-				return [...prevValues.filter(v => v !== 'nope'), value]
+				return [...prevValues.filter(v => v !== 'alcohol-nope'), value]
 			}
 		})
 	}
 
 	const handleRadioChange = (groupId: string, value: string) => {
+		if (value === 'attendance-nope') {
+			setWillBeAttended(false)
+		} else {
+			setWillBeAttended(true)
+		}
+
 		setSelectedRadios(prevState => ({
 			...prevState,
 			[groupId]: value,
 		}))
 	}
+
+	const isDisabled = (itemId: string) => {
+		// Если элемент не "attendance" и `willBeAttended` === false, отключаем
+		if (itemId !== 'attendance' && itemId !== 'name' && !willBeAttended) {
+			return true
+		}
+		return false
+	}
+
+	useEffect(() => {
+		const defaultRadios: Record<string, string> = {}
+		formItems.forEach(item => {
+			if (item.type === 'radio' && item.options) {
+				const defaultOption = item.options.find(option => option.isDefault)
+				if (defaultOption) {
+					defaultRadios[item.id] = defaultOption.value
+				}
+			}
+		})
+		setSelectedRadios(defaultRadios)
+	}, [formItems])
 
 	return (
 		<form
@@ -111,7 +304,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 			onSubmit={onFormSubmit}
 			className={`${
 				className ?? ''
-			} flex flex-col gap-y-10 font-gyre-mono will-change-transform`}
+			} flex flex-col gap-y-10 font-gyre-mono will-change-transform `}
 		>
 			{formItems.map(item => {
 				if (item.type === 'radio') {
@@ -120,11 +313,20 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 							<RadioGroup
 								key={`group-${item.label}`}
 								label={item.label}
-								classNames={{ label: cn(labelClassNames) }}
+								classNames={{
+									label: cn(
+										labelClassNames,
+										`${isDisabled(item.id) ? 'opacity-50' : 'opacity-100'}`,
+										errors[item.id] ? 'text-red-500' : ''
+									),
+								}}
 								defaultValue={
+									item.id +
+									'-' +
 									item.options?.find(option => option.isDefault)?.value
 								}
 								isRequired
+								isDisabled={isDisabled(item.id)}
 								onValueChange={value => handleRadioChange(item.id, value)}
 							>
 								{item.options?.map(option => (
@@ -139,15 +341,16 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 											),
 											label: cn('text-xl'),
 										}}
-										value={option.value}
+										value={`${item.id}-${option.value}`}
 									>
 										{option.text}
 									</Radio>
 								))}
 							</RadioGroup>
 
-							{selectedRadios[item.id] === 'couple' && (
+							{selectedRadios[item.id] === 'attendance-couple' && (
 								<Input
+									ref={coupleNameRef}
 									key={`input-couple-name`}
 									type='text'
 									variant='underlined'
@@ -155,9 +358,11 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 									placeholder=''
 									size='lg'
 									isRequired
+									isDisabled={isDisabled(item.id)}
 									classNames={{
-										inputWrapper:
-											'transition-all border-slate-950 data-[hover=true]:border-slate-950/50 mt-4 lg:mt-6',
+										inputWrapper: ` ${
+											errors[item.id] ? 'border-red-500' : inputClassNames
+										}`,
 										input: 'text-xl',
 										label: 'text-lg after:content-[""]',
 									}}
@@ -166,15 +371,18 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 
 							{selectedRadios[item.id] === 'allergies-yeap' && (
 								<Textarea
+									ref={allergiesRef}
 									key={`input-allergies`}
 									type='text'
 									variant='bordered'
 									placeholder='Напишите ваши аллергены, чтобы мы могли исключить их из состава блюд'
 									size='lg'
 									isRequired
+									isDisabled={isDisabled(item.id)}
 									classNames={{
-										inputWrapper:
-											'transition-all border-slate-950 data-[hover=true]:border-slate-950/50 mt-4 lg:mt-6',
+										inputWrapper: `transition-all mt-4 lg:mt-6 ${
+											errors[item.id] ? 'border-red-500' : inputClassNames
+										}`,
 										input: 'text-xl',
 										label: 'text-lg after:content-[""]',
 									}}
@@ -187,6 +395,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 				if (item.type === 'input') {
 					return (
 						<Input
+							ref={item.id === 'name' ? inputNameRef : null}
 							key={`input-${item.label}`}
 							type='text'
 							variant='underlined'
@@ -194,9 +403,11 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 							placeholder=''
 							size='lg'
 							isRequired
+							isDisabled={isDisabled(item.id)}
 							classNames={{
-								inputWrapper:
-									'transition-all border-slate-950 data-[hover=true]:border-slate-950/50',
+								inputWrapper: `transition-all ${
+									errors[item.id] ? 'border-red-500' : inputClassNames
+								}`,
 								input: 'text-xl',
 								label: 'text-lg after:content-[""]',
 							}}
@@ -210,13 +421,18 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 							key={`group-${item.label}`}
 							label={item.label}
 							classNames={{
-								label: cn(labelClassNames),
+								label: cn(
+									labelClassNames,
+									`${isDisabled(item.id) ? 'opacity-50' : 'opacity-100'}`,
+									errors[item.id] ? 'text-red-500' : ''
+								),
 							}}
 							defaultValue={item.options
 								?.filter(option => option.isDefault)
 								.map(option => option.value)}
 							value={checkboxValues}
 							isRequired
+							isDisabled={isDisabled(item.id)}
 						>
 							{item.options?.map(option => (
 								<Checkbox
@@ -228,8 +444,10 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 										label: cn('text-xl'),
 									}}
 									icon={<Heart color='#DDDDDC' />}
-									value={option.value}
-									onChange={() => handleCheckboxChange(option.value)}
+									value={`${item.id}-${option.value}`}
+									onChange={() =>
+										handleCheckboxChange(`${item.id}-${option.value}`)
+									}
 								>
 									{option.text}
 								</Checkbox>
@@ -238,6 +456,25 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 					)
 				}
 			})}
+			<div>
+				{Object.keys(errors).length > 0 && (
+					<div className='text-red-500 text-xl'>
+						<p>Форма заполнена не полностью:</p>
+						<ul>
+							{Object.values(errors).map((error, index) => (
+								<li key={index}>- {error}</li>
+							))}
+						</ul>
+					</div>
+				)}
+				<Button
+					className='font-gyre-mono text-2xl bg-slate-950 text-zinc-200 py-6 w-full mt-4'
+					variant='faded'
+					type='submit'
+				>
+					Отправить
+				</Button>
+			</div>
 		</form>
 	)
 })

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@nextui-org/button": "^2.0.38",
     "@nextui-org/checkbox": "^2.1.5",
     "@nextui-org/input": "^2.2.5",
     "@nextui-org/radio": "^2.1.5",
@@ -18,9 +19,11 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@studio-freight/react-lenis": "^0.0.47",
     "@yandex/ymaps3-types": "^1.0.15285770",
+    "axios": "^1.7.8",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
+    "dompurify": "^3.2.2",
     "embla-carousel-react": "^8.3.1",
     "framer-motion": "^11.12.0",
     "gsap": "^3.12.5",
