@@ -3,7 +3,7 @@
 import React, { FormEvent, forwardRef, useState } from 'react'
 import { RadioGroup, Radio } from '@nextui-org/radio'
 import { cn } from '@nextui-org/theme'
-import { Input } from '@nextui-org/input'
+import { Input, Textarea } from '@nextui-org/input'
 import { CheckboxGroup, Checkbox } from '@nextui-org/checkbox'
 import { Heart } from './icons/IconHeart'
 type TForm = {
@@ -27,7 +27,8 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 	const [selectedRadios, setSelectedRadios] = useState<Record<string, string>>(
 		{}
 	)
-	const labelClassNames = 'text-slate-950 text-2xl lg:text-3xl mb-3'
+	const labelClassNames =
+		'text-slate-950 text-2xl lg:text-3xl mb-3 after:content-[""]'
 
 	const onFormSubmit = async (e: FormEvent) => {
 		e.preventDefault()
@@ -71,6 +72,15 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 				{ value: 'nope', text: 'Не пью', isDefault: true },
 			],
 		},
+		{
+			id: 'allergies',
+			type: 'radio',
+			label: 'Есть ли у вас аллергия?',
+			options: [
+				{ value: 'allergies-yeap', text: 'Да' },
+				{ value: 'allergies-nope', text: 'Нет', isDefault: true },
+			],
+		},
 	]
 
 	const handleCheckboxChange = (value: string) => {
@@ -99,7 +109,9 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 		<form
 			ref={ref}
 			onSubmit={onFormSubmit}
-			className={`${className ?? ''} flex flex-col gap-y-10 font-gyre-mono`}
+			className={`${
+				className ?? ''
+			} flex flex-col gap-y-10 font-gyre-mono will-change-transform`}
 		>
 			{formItems.map(item => {
 				if (item.type === 'radio') {
@@ -112,6 +124,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 								defaultValue={
 									item.options?.find(option => option.isDefault)?.value
 								}
+								isRequired
 								onValueChange={value => handleRadioChange(item.id, value)}
 							>
 								{item.options?.map(option => (
@@ -121,7 +134,9 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 											wrapper: cn(
 												'group-data-[selected=true]:border-slate-950'
 											),
-											control: cn('group-data-[selected=true]:bg-slate-950'),
+											control: cn(
+												'group-data-[selected=true]:bg-[url("/img/heart.svg")] bg-transparent bg-contain bg-no-repeat bg-center w-2.5 h-2.5 rounded-none'
+											),
 											label: cn('text-xl'),
 										}}
 										value={option.value}
@@ -139,11 +154,29 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 									label='Имя и Фамилия Вашей половинки'
 									placeholder=''
 									size='lg'
+									isRequired
 									classNames={{
 										inputWrapper:
 											'transition-all border-slate-950 data-[hover=true]:border-slate-950/50 mt-4 lg:mt-6',
 										input: 'text-xl',
-										label: 'text-lg',
+										label: 'text-lg after:content-[""]',
+									}}
+								/>
+							)}
+
+							{selectedRadios[item.id] === 'allergies-yeap' && (
+								<Textarea
+									key={`input-allergies`}
+									type='text'
+									variant='bordered'
+									placeholder='Напишите ваши аллергены, чтобы мы могли исключить их из состава блюд'
+									size='lg'
+									isRequired
+									classNames={{
+										inputWrapper:
+											'transition-all border-slate-950 data-[hover=true]:border-slate-950/50 mt-4 lg:mt-6',
+										input: 'text-xl',
+										label: 'text-lg after:content-[""]',
 									}}
 								/>
 							)}
@@ -160,11 +193,12 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 							label={item.label}
 							placeholder=''
 							size='lg'
+							isRequired
 							classNames={{
 								inputWrapper:
 									'transition-all border-slate-950 data-[hover=true]:border-slate-950/50',
 								input: 'text-xl',
-								label: 'text-lg',
+								label: 'text-lg after:content-[""]',
 							}}
 						/>
 					)
@@ -182,6 +216,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 								?.filter(option => option.isDefault)
 								.map(option => option.value)}
 							value={checkboxValues}
+							isRequired
 						>
 							{item.options?.map(option => (
 								<Checkbox
