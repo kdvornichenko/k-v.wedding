@@ -191,8 +191,6 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 			}
 
 			await sendToTelegram(formData)
-		} else {
-			console.log('Форма содержит ошибки!')
 		}
 	}
 

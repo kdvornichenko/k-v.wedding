@@ -36,6 +36,7 @@ import {
 	Snippet,
 } from '@nextui-org/react'
 import { Heart } from '@/components/icons/IconHeart'
+import TelegramLink from '@/components/TelegramLink'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -261,10 +262,6 @@ export default function Home() {
 		})
 	}, [lenis, isSlideShowComplete])
 
-	useEffect(() => {
-		console.log(formError)
-	}, [formError])
-
 	return (
 		<ReactLenis
 			root
@@ -282,24 +279,31 @@ export default function Home() {
 				<ModalContent>
 					{onClose => (
 						<>
-							<ModalHeader className='flex flex-col gap-1'>
+							<ModalHeader className='flex flex-col gap-1 font-kudry text-3xl'>
 								{formSended
-									? 'Форма успешно отправлена!'
+									? 'Ответы отправлены!'
 									: 'Ошибка при отправке формы'}
 							</ModalHeader>
-							<ModalBody>
+							<ModalBody className='font-gyre-mono text-xl'>
 								{formSended ? (
 									willBeAttended ? (
-										<p>Спасибо! С нетерпением ждем Вас на свадьбе!</p>
+										<div className='flex flex-col gap-y-4'>
+											<p>Спасибо! С нетерпением ждем Вас на свадьбе!</p>
+											<p>
+												Если есть вопросы насчет свадьбы или хотите что-то
+												поменять в ответах, то пишите нам{' '}
+												<TelegramLink person='k' /> <TelegramLink person='v' />
+											</p>
+											<p>
+												Если есть что-то, о чем нам знать не надо, то можете
+												пошушукаться с нашим организатором{' '}
+												<TelegramLink person='a' />
+											</p>
+										</div>
 									) : (
 										<p>
-											Очень жаль 😢 Если передумаете, напишите мне в{' '}
-											<a
-												className='text-sky-600 underline underline-offset-4'
-												href='https://t.me/mercyyy813'
-											>
-												@mercyyy813
-											</a>
+											Очень жаль 😢 Если передумаете, напишите мне{' '}
+											<TelegramLink person='k' />
 										</p>
 									)
 								) : (
@@ -337,7 +341,9 @@ export default function Home() {
 									</>
 								)}
 							</ModalBody>
-							<ModalFooter>
+							<ModalFooter className='flex items-center justify-between'>
+								<p className='text-lg font-kudry'>K&V</p>
+
 								<Button
 									color='primary'
 									className='bg-slate-950'
