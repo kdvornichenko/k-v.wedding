@@ -199,7 +199,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 	const sendToTelegram = async (formData: IFormData) => {
 		const botToken = process.env.NEXT_PUBLIC_TG_API
 		const chatId = process.env.NEXT_PUBLIC_CHAT_API
-		const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessag`
+		const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`
 
 		// Подготовка текста сообщения
 		const message = !willBeAttended
