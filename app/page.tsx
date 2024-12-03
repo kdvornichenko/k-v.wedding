@@ -25,11 +25,29 @@ import { Clock } from '@/components/icons/IconClock'
 import PlanItem from '@/components/PlanItem'
 import Color from '@/components/Color'
 import Form from '@/components/Form'
+import useFormState from '@/store/form.store'
+import {
+	Modal,
+	ModalContent,
+	ModalHeader,
+	ModalBody,
+	ModalFooter,
+	Button,
+	Snippet,
+} from '@nextui-org/react'
+import { Heart } from '@/components/icons/IconHeart'
 
 gsap.registerPlugin(ScrollTrigger)
 
 export default function Home() {
 	const [isMapLoaded, setIsMapLoaded] = useState(false)
+	const {
+		formSended,
+		showFormModal,
+		setShowFormModal,
+		willBeAttended,
+		formError,
+	} = useFormState()
 	const { isSlideShowComplete } = useSlideShowStore()
 	const screenRefs = useRef<
 		Record<
@@ -243,12 +261,96 @@ export default function Home() {
 		})
 	}, [lenis, isSlideShowComplete])
 
+	useEffect(() => {
+		console.log(formError)
+	}, [formError])
+
 	return (
 		<ReactLenis
 			root
 			options={{ syncTouch: true, smoothWheel: true, touchMultiplier: 0 }}
 		>
 			<Loader />
+
+			<Modal
+				isOpen={showFormModal}
+				onOpenChange={isOpen => setShowFormModal(isOpen)}
+				backdrop='blur'
+				placement='center'
+				size='2xl'
+			>
+				<ModalContent>
+					{onClose => (
+						<>
+							<ModalHeader className='flex flex-col gap-1'>
+								{formSended
+									? 'Форма успешно отправлена!'
+									: 'Ошибка при отправке формы'}
+							</ModalHeader>
+							<ModalBody>
+								{formSended ? (
+									willBeAttended ? (
+										<p>Спасибо! С нетерпением ждем Вас на свадьбе!</p>
+									) : (
+										<p>
+											Очень жаль 😢 Если передумаете, напишите мне в{' '}
+											<a
+												className='text-sky-600 underline underline-offset-4'
+												href='https://t.me/mercyyy813'
+											>
+												@mercyyy813
+											</a>
+										</p>
+									)
+								) : (
+									<>
+										<p>
+											Ошибка при отправке формы. Пожалуйста, скопируйте это
+											сообщение нажав на значок{' '}
+											<Snippet
+												symbol=''
+												variant='bordered'
+												size='sm'
+												disableCopy
+												classNames={{
+													base: 'gap-0',
+													copyButton: 'opacity-100',
+												}}
+											/>{' '}
+											(или сделайте скриншот) и отправьте мне в Telegram{' '}
+											<a
+												className='text-sky-600 underline underline-offset-4'
+												href='https://t.me/mercyyy813'
+												target='_blank'
+											>
+												@mercyyy813
+											</a>
+										</p>
+										<Snippet
+											symbol=''
+											variant='bordered'
+											size='lg'
+											classNames={{ pre: 'whitespace-pre-line' }}
+										>
+											{formError}
+										</Snippet>
+									</>
+								)}
+							</ModalBody>
+							<ModalFooter>
+								<Button
+									color='primary'
+									className='bg-slate-950'
+									onPress={onClose}
+								>
+									<Heart className='size-4' />
+								</Button>
+							</ModalFooter>
+						</>
+					)}
+				</ModalContent>
+			</Modal>
+
 			<div ref={containerRef} className='relative bg-stone-50 z-10 '>
 				<div className='relative z-20'>
 					<SlideShow totalImages={6} />

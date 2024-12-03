@@ -195,7 +195,7 @@
   resolved "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-14.2.16.tgz"
   integrity sha512-OA7NtfxgirCjfqt+02BqxC3MIgM/JaGjw9tOe4fyZgPsqfseNiMPnCRP44Pfs+Gpo9zPN+SXaFsgP6vk8d571A==
 
-"@nextui-org/accordion@2.0.40":
+"@nextui-org/accordion@^2.0.40", "@nextui-org/accordion@2.0.40":
   version "2.0.40"
   resolved "https://registry.npmjs.org/@nextui-org/accordion/-/accordion-2.0.40.tgz"
   integrity sha512-aJmhflLOXOFTjbBWlWto30hYzimw+sw1EZwSRG9CdxbjRact2dRfCLsZQmHkJW2ifVx51g/qLNE2NSFAi2L8dA==
@@ -552,7 +552,7 @@
     "@react-types/menu" "3.9.9"
     "@react-types/shared" "3.23.1"
 
-"@nextui-org/modal@2.0.41":
+"@nextui-org/modal@^2.0.41", "@nextui-org/modal@2.0.41":
   version "2.0.41"
   resolved "https://registry.npmjs.org/@nextui-org/modal/-/modal-2.0.41.tgz"
   integrity sha512-Sirn319xAf7E4cZqvQ0o0Vd3Xqy0FRSuhOTwp8dALMGTMY61c2nIyurgVCNP6hh8dMvMT7zQEPP9/LE0boFCEQ==
@@ -793,7 +793,7 @@
     "@react-aria/visually-hidden" "3.8.12"
     "@react-stately/slider" "3.5.4"
 
-"@nextui-org/snippet@2.0.43":
+"@nextui-org/snippet@^2.0.43", "@nextui-org/snippet@2.0.43":
   version "2.0.43"
   resolved "https://registry.npmjs.org/@nextui-org/snippet/-/snippet-2.0.43.tgz"
   integrity sha512-PLxc9ph9CLj52L26XSv4vBmQcSytCNc3ZBxkOTBEqmLSHCWwGQExrqKPnVZTE1etr6dcULiy5vNIpD8R7taO8A==
@@ -816,7 +816,7 @@
     "@nextui-org/shared-utils" "2.0.8"
     "@nextui-org/system-rsc" "2.1.6"
 
-"@nextui-org/spinner@2.0.34":
+"@nextui-org/spinner@^2.0.34", "@nextui-org/spinner@2.0.34":
   version "2.0.34"
   resolved "https://registry.npmjs.org/@nextui-org/spinner/-/spinner-2.0.34.tgz"
   integrity sha512-YKw/6xSLhsXU1k22OvYKyWhtJCHzW2bRAiieVSVG5xak3gYwknTds5H9s5uur+oAZVK9AkyAObD19QuZND32Jg==
@@ -920,7 +920,7 @@
     tailwind-merge "^1.14.0"
     tailwind-variants "^0.1.20"
 
-"@nextui-org/tooltip@2.0.41":
+"@nextui-org/tooltip@^2.0.41", "@nextui-org/tooltip@2.0.41":
   version "2.0.41"
   resolved "https://registry.npmjs.org/@nextui-org/tooltip/-/tooltip-2.0.41.tgz"
   integrity sha512-1c+vkCCszKcKl15HywlZ7UOL7c1UFgLudqBB/dEdWZiclT01BRiracMbcQ7McKHQCRl77Aa7LFv5x4wHOicWHQ==

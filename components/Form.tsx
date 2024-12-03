@@ -16,6 +16,7 @@ import { CheckboxGroup, Checkbox } from '@nextui-org/checkbox'
 import { Heart } from './icons/IconHeart'
 import DOMPurify from 'dompurify'
 import axios from 'axios'
+import useFormState from '@/store/form.store'
 
 type TForm = {
 	className?: string
@@ -23,7 +24,7 @@ type TForm = {
 
 type TFormItem = {
 	id: string
-	type: 'radio' | 'checkbox' | 'input'
+	type: 'radio' | 'checkbox' | 'input' | 'textarea'
 	label: string
 	options?: Array<{
 		value: string
@@ -39,6 +40,7 @@ interface IFormData {
 	allergies?: string
 	radios: Record<string, string>
 	checkboxValues: Record<string, string[]>
+	about?: string
 }
 
 const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
@@ -50,7 +52,6 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 	const [selectedRadios, setSelectedRadios] = useState<Record<string, string>>(
 		{}
 	)
-	const [willBeAttended, setWillBeAttended] = useState<boolean>(true)
 	const labelClassNames = useMemo(
 		() => 'text-slate-950 text-2xl lg:text-3xl mb-3 after:content-[""]',
 		[]
@@ -60,6 +61,15 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 		[]
 	)
 	const [errors, setErrors] = useState<Record<string, string>>({})
+	const {
+		setShowFormModal,
+		setFormSended,
+		setIsSending,
+		isSending,
+		willBeAttended,
+		setWillBeAttended,
+		setFormError,
+	} = useFormState()
 
 	const formItems: TFormItem[] = useMemo(
 		() => [
@@ -108,6 +118,11 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 					{ value: 'nope', text: 'Нет', isDefault: true },
 				],
 			},
+			{
+				id: 'about',
+				type: 'textarea',
+				label: 'Нужно ли нам знать что-то еще?',
+			},
 		],
 		[]
 	)
@@ -115,6 +130,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 	const allergiesRef = useRef<HTMLTextAreaElement>(null)
 	const coupleNameRef = useRef<HTMLInputElement>(null)
 	const inputNameRef = useRef<HTMLInputElement>(null)
+	const aboutRef = useRef<HTMLTextAreaElement>(null)
 
 	const onFormSubmit = async (e: FormEvent) => {
 		e.preventDefault()
@@ -171,10 +187,9 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 					return acc
 				}, {} as Record<string, string>),
 				checkboxValues: getCheckboxTexts(checkboxValues),
+				about: sanitizeInput(aboutRef.current?.value || ''),
 			}
 
-			// Здесь ты можешь отправить данные
-			console.log('Отправка формы:', formData)
 			await sendToTelegram(formData)
 		} else {
 			console.log('Форма содержит ошибки!')
@@ -182,12 +197,14 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 	}
 
 	const sendToTelegram = async (formData: IFormData) => {
-		const botToken = process.env.NEXT_PUBLIC_TG_API // Замени на токен бота
-		const chatId = process.env.NEXT_PUBLIC_CHAT_API // Замени на свой chat_id
-		const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`
+		const botToken = process.env.NEXT_PUBLIC_TG_API
+		const chatId = process.env.NEXT_PUBLIC_CHAT_API
+		const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessag`
 
 		// Подготовка текста сообщения
-		const message = `
+		const message = !willBeAttended
+			? `${formData.name} не придет`
+			: `
 		Анкета гостя:
 		Имя: ${formData.name}
 		Половинка: ${formData.coupleName || 'Не указано'}
@@ -203,17 +220,37 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 					`- ${group}: ${values.length > 0 ? values.join(', ') : 'Не выбрано'}`
 			)
 			.join('\n')}
+		Дополнительная информация: ${formData.about}
 	`
 
 		// Отправка сообщения
 		try {
-			await axios.post(apiUrl, {
-				chat_id: chatId,
-				text: message,
-				parse_mode: 'HTML',
-			})
+			setIsSending(true)
+			await axios
+				.post(apiUrl, {
+					chat_id: chatId,
+					text: message,
+					parse_mode: 'HTML',
+				})
+				.then(() => {
+					setFormSended(true)
+					setShowFormModal(true)
+				})
 		} catch (error) {
-			console.error('Ошибка при отправке в Telegram:', error)
+			if (axios.isAxiosError(error)) {
+				const errorMessage =
+					`${error.message}\nResponse description: ${error.response?.data?.description}` ||
+					'Произошла ошибка при отправке формы'
+				console.error('Ошибка при отправке в Telegram:', error)
+				setFormError(errorMessage)
+			} else {
+				console.error('Неизвестная ошибка:', error)
+				setFormError('Неизвестная ошибка. Пожалуйста, попробуйте снова.')
+			}
+			setFormSended(false)
+			setShowFormModal(true)
+		} finally {
+			setIsSending(false)
 		}
 	}
 
@@ -278,7 +315,6 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 	}
 
 	const isDisabled = (itemId: string) => {
-		// Если элемент не "attendance" и `willBeAttended` === false, отключаем
 		if (itemId !== 'attendance' && itemId !== 'name' && !willBeAttended) {
 			return true
 		}
@@ -455,6 +491,27 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 						</CheckboxGroup>
 					)
 				}
+
+				if (item.id === 'about') {
+					return (
+						<Textarea
+							ref={aboutRef}
+							key={`textarea-about`}
+							type='text'
+							variant='bordered'
+							size='lg'
+							placeholder={item.label}
+							isDisabled={isDisabled(item.id)}
+							classNames={{
+								inputWrapper: `transition-all mt-4 lg:mt-6 ${
+									errors[item.id] ? 'border-red-500' : inputClassNames
+								}`,
+								input: 'text-xl',
+								label: 'text-lg after:content-[""]',
+							}}
+						/>
+					)
+				}
 			})}
 			<div>
 				{Object.keys(errors).length > 0 && (
@@ -471,6 +528,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 					className='font-gyre-mono text-2xl bg-slate-950 text-zinc-200 py-6 w-full mt-4'
 					variant='faded'
 					type='submit'
+					isLoading={isSending}
 				>
 					Отправить
 				</Button>
