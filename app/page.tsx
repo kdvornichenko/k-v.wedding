@@ -252,7 +252,7 @@ export default function Home() {
 		} else {
 			lenis?.start()
 		}
-	}, [showFormModal])
+	}, [showFormModal, lenis])
 
 	return (
 		<ReactLenis
