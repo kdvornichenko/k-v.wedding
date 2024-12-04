@@ -121,7 +121,9 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 				coupleName: sanitizeInput(coupleNameRef.current?.value || ''),
 				allergies: sanitizeInput(allergiesRef.current?.value || ''),
 				phone: sanitizeInput(phone),
-				telegram: sanitizeInput(inputTelegramRef.current?.value || 'Не пользуется'),
+				telegram: sanitizeInput(
+					inputTelegramRef.current?.value || 'Не пользуется'
+				),
 				radios: Object.keys(selectedRadios).reduce((acc, groupId) => {
 					acc[groupId] = getRadioText(groupId, selectedRadios[groupId])
 					return acc
@@ -131,53 +133,6 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 			}
 
 			await sendToTelegram(formData)
-		}
-	}
-
-	const sendToTelegram = async (formData: IFormData) => {
-		const botToken = process.env.NEXT_PUBLIC_TG_API
-		const chatId = process.env.NEXT_PUBLIC_CHAT_API
-		const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`
-
-		const message = `Анкета гостя:\n
-Имя: ${formData.name}
-Телефон: ${formData.phone}
-Telegram: @${formData.telegram}
-Присутствие: ${formData.radios.attendance || 'Не указано'}
-Транспорт: ${formData.radios.transport || 'Не указано'}
-Аллергии: ${formData.allergies || 'Нет'}
-Алкоголь: ${
-			formData.checkboxValues['alcohol']?.length
-				? formData.checkboxValues['alcohol'].join(', ')
-				: 'Не выбрано'
-		}
-Дополнительная информация: ${formData.about || 'Нет'}`
-
-		// Отправка сообщения
-		try {
-			setIsSending(true)
-			await axios.post(apiUrl, {
-				chat_id: chatId,
-				text: message,
-				parse_mode: 'HTML',
-			})
-			setFormSended(true)
-			setShowFormModal(true)
-		} catch (error) {
-			if (axios.isAxiosError(error)) {
-				const errorMessage =
-					`Сообщение: ${error.message}\nОписание: ${error.response?.data?.description}` ||
-					'Произошла ошибка при отправке формы'
-				console.error('Ошибка при отправке в Telegram:', error)
-				setFormError(errorMessage)
-			} else {
-				console.error('Неизвестная ошибка:', error)
-				setFormError('Неизвестная ошибка. Пожалуйста, попробуйте снова.')
-			}
-			setFormSended(false)
-			setShowFormModal(true)
-		} finally {
-			setIsSending(false)
 		}
 	}
 
@@ -217,6 +172,57 @@ Telegram: @${formData.telegram}
 		}
 		setErrors(newErrors)
 		return Object.keys(newErrors).length === 0
+	}
+
+	const sendToTelegram = async (formData: IFormData) => {
+		const botToken = process.env.NEXT_PUBLIC_TG_API
+		const chatId = process.env.NEXT_PUBLIC_CHAT_API
+		const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`
+
+		const message = !willBeAttended
+			? `${formData.name} не придет
+Телефон: ${formData.phone}
+Telegram: @${formData.telegram}`
+			: `Анкета гостя:\n
+Имя: ${formData.name}
+Телефон: ${formData.phone}
+Telegram: @${formData.telegram}
+Присутствие: ${formData.radios.attendance || 'Не указано'}
+Транспорт: ${formData.radios.transport || 'Не указано'}
+Аллергии: ${formData.allergies || 'Нет'}
+Алкоголь: ${
+					formData.checkboxValues['alcohol']?.length
+						? formData.checkboxValues['alcohol'].join(', ')
+						: 'Не выбрано'
+			  }
+Дополнительная информация: ${formData.about || 'Нет'}`
+
+		// Отправка сообщения
+		try {
+			setIsSending(true)
+			await axios.post(apiUrl, {
+				chat_id: chatId,
+				text: message,
+				parse_mode: 'HTML',
+			})
+			setFormSended(true)
+			setShowFormModal(true)
+		} catch (error) {
+			if (axios.isAxiosError(error)) {
+				const errorMessage =
+					`Сообщение: ${error.message}\nОписание: ${error.response?.data?.description}` ||
+					'Произошла ошибка при отправке формы'
+				console.error('Ошибка при отправке в Telegram:', error)
+				setFormError(errorMessage)
+			} else {
+				console.error('Неизвестная ошибка:', error)
+				setFormError('Неизвестная ошибка. Пожалуйста, попробуйте снова.')
+			}
+			setFormSended(false)
+			setShowFormModal(true)
+		} finally {
+			setIsSending(false)
+		}
 	}
 
 	const handleCheckboxChange = (value: string) => {
