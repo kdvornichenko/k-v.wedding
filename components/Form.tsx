@@ -17,25 +17,17 @@ import { Heart } from './icons/IconHeart'
 import DOMPurify from 'dompurify'
 import axios from 'axios'
 import useFormState from '@/store/form.store'
+import { formItems } from '@/data/form.data'
+import ReactInputMask from 'react-input-mask'
 
 type TForm = {
 	className?: string
 }
 
-type TFormItem = {
-	id: string
-	type: 'radio' | 'checkbox' | 'input' | 'textarea'
-	label: string
-	options?: Array<{
-		value: string
-		text: string
-		isDefault?: boolean
-		onChange?: (value: string) => void
-	}>
-}
-
 interface IFormData {
 	name: string
+	phone: string
+	telegram?: string
 	coupleName?: string
 	allergies?: string
 	radios: Record<string, string>
@@ -46,6 +38,7 @@ interface IFormData {
 const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 	const sanitizeInput = (input: string) => DOMPurify.sanitize(input)
 
+	const [phone, setPhone] = useState<string>('')
 	const [checkboxValues, setCheckboxValues] = useState<string[]>([
 		'alcohol-nope',
 	])
@@ -71,65 +64,10 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 		setFormError,
 	} = useFormState()
 
-	const formItems: TFormItem[] = useMemo(
-		() => [
-			{ id: 'name', type: 'input', label: 'Ваше Имя и Фамилия' },
-			{
-				id: 'attendance',
-				type: 'radio',
-				label: 'Придете?',
-				options: [
-					{ value: 'solo', text: 'Приду один (одна)', isDefault: true },
-					{
-						value: 'couple',
-						text: 'Приду с половинкой',
-					},
-					{ value: 'nope', text: 'Не смогу присутствовать' },
-				],
-			},
-			{
-				id: 'transport',
-				type: 'radio',
-				label: 'Как планируете добираться до места свадьбы?',
-				options: [
-					{ value: 'transfer', text: 'На нашем трансфере' },
-					{ value: 'self', text: 'Самостоятельно', isDefault: true },
-				],
-			},
-			{
-				id: 'alcohol',
-				type: 'checkbox',
-				label: 'Алкоголь?',
-				options: [
-					{ value: 'red-dry', text: 'Красное сухое' },
-					{ value: 'red-semi-sweet', text: 'Красное полусухое' },
-					{ value: 'white-dry', text: 'Белое сухое' },
-					{ value: 'white-semi-sweet', text: 'Белое полусухое' },
-					{ value: 'champaign', text: 'Шампанское' },
-					{ value: 'nope', text: 'Не пью', isDefault: true },
-				],
-			},
-			{
-				id: 'allergies',
-				type: 'radio',
-				label: 'Есть ли у вас аллергия?',
-				options: [
-					{ value: 'yeap', text: 'Да' },
-					{ value: 'nope', text: 'Нет', isDefault: true },
-				],
-			},
-			{
-				id: 'about',
-				type: 'textarea',
-				label: 'Нужно ли нам знать что-то еще?',
-			},
-		],
-		[]
-	)
-
 	const allergiesRef = useRef<HTMLTextAreaElement>(null)
 	const coupleNameRef = useRef<HTMLInputElement>(null)
 	const inputNameRef = useRef<HTMLInputElement>(null)
+	const inputTelegramRef = useRef<HTMLInputElement>(null)
 	const aboutRef = useRef<HTMLTextAreaElement>(null)
 
 	const onFormSubmit = async (e: FormEvent) => {
@@ -182,6 +120,8 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 				name: sanitizeInput(inputNameRef.current?.value || ''),
 				coupleName: sanitizeInput(coupleNameRef.current?.value || ''),
 				allergies: sanitizeInput(allergiesRef.current?.value || ''),
+				phone: sanitizeInput(phone),
+				telegram: sanitizeInput(inputTelegramRef.current?.value || 'Не пользуется'),
 				radios: Object.keys(selectedRadios).reduce((acc, groupId) => {
 					acc[groupId] = getRadioText(groupId, selectedRadios[groupId])
 					return acc
@@ -199,45 +139,34 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 		const chatId = process.env.NEXT_PUBLIC_CHAT_API
 		const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`
 
-		// Подготовка текста сообщения
-		const message = !willBeAttended
-			? `${formData.name} не придет`
-			: `
-		Анкета гостя:
-		Имя: ${formData.name}
-		Половинка: ${formData.coupleName || 'Не указано'}
-		Аллергии: ${formData.allergies || 'Нет'}
-		Радио-группы:
-		${Object.entries(formData.radios)
-			.map(([key, value]) => `- ${key}: ${value}`)
-			.join('\n')}
-		Чекбоксы:
-		${Object.entries(formData.checkboxValues as Record<string, string[]>)
-			.map(
-				([group, values]) =>
-					`- ${group}: ${values.length > 0 ? values.join(', ') : 'Не выбрано'}`
-			)
-			.join('\n')}
-		Дополнительная информация: ${formData.about}
-	`
+		const message = `Анкета гостя:\n
+Имя: ${formData.name}
+Телефон: ${formData.phone}
+Telegram: @${formData.telegram}
+Присутствие: ${formData.radios.attendance || 'Не указано'}
+Транспорт: ${formData.radios.transport || 'Не указано'}
+Аллергии: ${formData.allergies || 'Нет'}
+Алкоголь: ${
+			formData.checkboxValues['alcohol']?.length
+				? formData.checkboxValues['alcohol'].join(', ')
+				: 'Не выбрано'
+		}
+Дополнительная информация: ${formData.about || 'Нет'}`
 
 		// Отправка сообщения
 		try {
 			setIsSending(true)
-			await axios
-				.post(apiUrl, {
-					chat_id: chatId,
-					text: message,
-					parse_mode: 'HTML',
-				})
-				.then(() => {
-					setFormSended(true)
-					setShowFormModal(true)
-				})
+			await axios.post(apiUrl, {
+				chat_id: chatId,
+				text: message,
+				parse_mode: 'HTML',
+			})
+			setFormSended(true)
+			setShowFormModal(true)
 		} catch (error) {
 			if (axios.isAxiosError(error)) {
 				const errorMessage =
-					`${error.message}\nResponse description: ${error.response?.data?.description}` ||
+					`Сообщение: ${error.message}\nОписание: ${error.response?.data?.description}` ||
 					'Произошла ошибка при отправке формы'
 				console.error('Ошибка при отправке в Telegram:', error)
 				setFormError(errorMessage)
@@ -283,6 +212,9 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 			newErrors['allergies'] = 'Заполните аллергены'
 		}
 
+		if (!sanitizeInput(phone || '').trim().length) {
+			newErrors['phone'] = 'Введите номер телефона'
+		}
 		setErrors(newErrors)
 		return Object.keys(newErrors).length === 0
 	}
@@ -330,7 +262,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 			}
 		})
 		setSelectedRadios(defaultRadios)
-	}, [formItems])
+	}, [])
 
 	return (
 		<form
@@ -427,26 +359,74 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 				}
 
 				if (item.type === 'input') {
-					return (
-						<Input
-							ref={item.id === 'name' ? inputNameRef : null}
-							key={`input-${item.label}`}
-							type='text'
-							variant='underlined'
-							label={item.label}
-							placeholder=''
-							size='lg'
-							isRequired
-							isDisabled={isDisabled(item.id)}
-							classNames={{
-								inputWrapper: `transition-all ${
-									errors[item.id] ? 'border-red-500' : inputClassNames
-								}`,
-								input: 'text-xl',
-								label: 'text-lg after:content-[""]',
-							}}
-						/>
-					)
+					if (item.id === 'phone') {
+						return (
+							<ReactInputMask
+								mask='+7 (999) 999-99-99'
+								value={phone}
+								onChange={e => setPhone(e.target.value)}
+								key={`input-${item.label}`}
+							>
+								{inputProps => (
+									<Input
+										{...inputProps}
+										label='Номер телефона'
+										variant='underlined'
+										size='lg'
+										isRequired
+										classNames={{
+											inputWrapper: `transition-all ${
+												errors['phone'] ? 'border-red-500' : inputClassNames
+											}`,
+											input: 'text-xl',
+											label: 'text-lg after:content-[""]',
+										}}
+									/>
+								)}
+							</ReactInputMask>
+						)
+					} else if (item.id === 'telegram') {
+						return (
+							<Input
+								ref={inputTelegramRef}
+								key={`input-${item.label}`}
+								type='text'
+								variant='underlined'
+								label={item.label}
+								placeholder=''
+								size='lg'
+								isDisabled={isDisabled(item.id)}
+								startContent='@'
+								classNames={{
+									inputWrapper: `transition-all ${
+										errors[item.id] ? 'border-red-500' : inputClassNames
+									}`,
+									input: 'text-xl data-[has-start-content=true]:ps-0',
+									label: 'text-lg after:content-[""]',
+								}}
+							/>
+						)
+					} else
+						return (
+							<Input
+								ref={item.id === 'name' ? inputNameRef : null}
+								key={`input-${item.label}`}
+								type='text'
+								variant='underlined'
+								label={item.label}
+								placeholder=''
+								size='lg'
+								isRequired
+								isDisabled={isDisabled(item.id)}
+								classNames={{
+									inputWrapper: `transition-all ${
+										errors[item.id] ? 'border-red-500' : inputClassNames
+									}`,
+									input: 'text-xl',
+									label: 'text-lg after:content-[""]',
+								}}
+							/>
+						)
 				}
 
 				if (item.type === 'checkbox') {

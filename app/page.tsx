@@ -25,31 +25,15 @@ import { Clock } from '@/components/icons/IconClock'
 import PlanItem from '@/components/PlanItem'
 import Color from '@/components/Color'
 import Form from '@/components/Form'
+import FormModal from '@/components/FormModal'
 import useFormState from '@/store/form.store'
-import {
-	Modal,
-	ModalContent,
-	ModalHeader,
-	ModalBody,
-	ModalFooter,
-	Button,
-	Snippet,
-} from '@nextui-org/react'
-import { Heart } from '@/components/icons/IconHeart'
-import TelegramLink from '@/components/TelegramLink'
 
 gsap.registerPlugin(ScrollTrigger)
 
 export default function Home() {
 	const [isMapLoaded, setIsMapLoaded] = useState(false)
-	const {
-		formSended,
-		showFormModal,
-		setShowFormModal,
-		willBeAttended,
-		formError,
-	} = useFormState()
 	const { isSlideShowComplete } = useSlideShowStore()
+	const { showFormModal } = useFormState()
 	const screenRefs = useRef<
 		Record<
 			number,
@@ -262,6 +246,14 @@ export default function Home() {
 		})
 	}, [lenis, isSlideShowComplete])
 
+	useEffect(() => {
+		if (showFormModal) {
+			lenis?.stop()
+		} else {
+			lenis?.start()
+		}
+	}, [showFormModal])
+
 	return (
 		<ReactLenis
 			root
@@ -269,93 +261,7 @@ export default function Home() {
 		>
 			<Loader />
 
-			<Modal
-				isOpen={showFormModal}
-				onOpenChange={isOpen => setShowFormModal(isOpen)}
-				backdrop='blur'
-				placement='center'
-				size='2xl'
-			>
-				<ModalContent>
-					{onClose => (
-						<>
-							<ModalHeader className='flex flex-col gap-1 font-kudry text-3xl'>
-								{formSended
-									? 'Ответы отправлены!'
-									: 'Ошибка при отправке формы'}
-							</ModalHeader>
-							<ModalBody className='font-gyre-mono text-xl'>
-								{formSended ? (
-									willBeAttended ? (
-										<div className='flex flex-col gap-y-4'>
-											<p>Спасибо! С нетерпением ждем Вас на свадьбе!</p>
-											<p>
-												Если есть вопросы насчет свадьбы или хотите что-то
-												поменять в ответах, то пишите нам{' '}
-												<TelegramLink person='k' /> <TelegramLink person='v' />
-											</p>
-											<p>
-												Если есть что-то, о чем нам знать не надо, то можете
-												пошушукаться с нашим организатором{' '}
-												<TelegramLink person='a' />
-											</p>
-										</div>
-									) : (
-										<p>
-											Очень жаль 😢 Если передумаете, напишите мне{' '}
-											<TelegramLink person='k' />
-										</p>
-									)
-								) : (
-									<>
-										<p>
-											Ошибка при отправке формы. Пожалуйста, скопируйте это
-											сообщение нажав на значок{' '}
-											<Snippet
-												symbol=''
-												variant='bordered'
-												size='sm'
-												disableCopy
-												classNames={{
-													base: 'gap-0',
-													copyButton: 'opacity-100',
-												}}
-											/>{' '}
-											(или сделайте скриншот) и отправьте мне в Telegram{' '}
-											<a
-												className='text-sky-600 underline underline-offset-4'
-												href='https://t.me/mercyyy813'
-												target='_blank'
-											>
-												@mercyyy813
-											</a>
-										</p>
-										<Snippet
-											symbol=''
-											variant='bordered'
-											size='lg'
-											classNames={{ pre: 'whitespace-pre-line' }}
-										>
-											{formError}
-										</Snippet>
-									</>
-								)}
-							</ModalBody>
-							<ModalFooter className='flex items-center justify-between'>
-								<p className='text-lg font-kudry'>K&V</p>
-
-								<Button
-									color='primary'
-									className='bg-slate-950'
-									onPress={onClose}
-								>
-									<Heart className='size-4' />
-								</Button>
-							</ModalFooter>
-						</>
-					)}
-				</ModalContent>
-			</Modal>
+			<FormModal />
 
 			<div ref={containerRef} className='relative bg-stone-50 z-10 '>
 				<div className='relative z-20'>
