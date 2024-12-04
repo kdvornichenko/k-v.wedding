@@ -122,7 +122,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 				allergies: sanitizeInput(allergiesRef.current?.value || ''),
 				phone: sanitizeInput(phone),
 				telegram: sanitizeInput(
-					inputTelegramRef.current?.value || 'Не пользуется'
+					inputTelegramRef.current?.value || ''
 				),
 				radios: Object.keys(selectedRadios).reduce((acc, groupId) => {
 					acc[groupId] = getRadioText(groupId, selectedRadios[groupId])
@@ -167,7 +167,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 			newErrors['allergies'] = 'Заполните аллергены'
 		}
 
-		if (!sanitizeInput(phone || '').trim().length) {
+		if (!sanitizeInput(phone || '').trim().length && willBeAttended) {
 			newErrors['phone'] = 'Введите номер телефона'
 		}
 		setErrors(newErrors)
@@ -181,8 +181,8 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 
 		const message = !willBeAttended
 			? `${formData.name} не придет
-Телефон: ${formData.phone}
-Telegram: @${formData.telegram}`
+${formData.phone && `Телефон: ${formData.phone}`}
+${formData.telegram && `Telegram: @${formData.telegram}`}`
 			: `Анкета гостя:\n
 Имя: ${formData.name}
 Телефон: ${formData.phone}
@@ -379,7 +379,8 @@ Telegram: @${formData.telegram}
 										label='Номер телефона'
 										variant='underlined'
 										size='lg'
-										isRequired
+										isRequired={!isDisabled(item.id)}
+										isDisabled={isDisabled(item.id)}
 										classNames={{
 											inputWrapper: `transition-all ${
 												errors['phone'] ? 'border-red-500' : inputClassNames
