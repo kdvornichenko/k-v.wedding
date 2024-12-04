@@ -53,8 +53,8 @@ const FormModal = () => {
 									</div>
 								) : (
 									<div>
-										<span>Очень жаль 😢 Если передумаете, напишите мне </span>
-										<TelegramLink person='k' />
+										<span>Очень жаль 😢 Если передумаете, напишите нам </span>
+										<TelegramLink person='k' /> <TelegramLink person='v' />
 									</div>
 								)
 							) : (
