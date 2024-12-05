@@ -27,6 +27,8 @@ import Color from '@/components/Color'
 import Form from '@/components/Form'
 import FormModal from '@/components/FormModal'
 import useFormState from '@/store/form.store'
+import { colorsPalette } from '@/data/colors.data'
+import { GlitchFx } from '@/lib/GlitchFX'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -34,6 +36,7 @@ export default function Home() {
 	const [isMapLoaded, setIsMapLoaded] = useState(false)
 	const { isSlideShowComplete } = useSlideShowStore()
 	const { showFormModal } = useFormState()
+	const [detailsWord, setDetailsWord] = useState('Details')
 	const screenRefs = useRef<
 		Record<
 			number,
@@ -51,6 +54,7 @@ export default function Home() {
 	const containerRef = useRef<HTMLDivElement>(null)
 	const addressRef = useRef<HTMLAnchorElement>(null)
 	const fingerRef = useRef<SVGSVGElement>(null)
+	const glitchRef = useRef<HTMLDivElement>(null)
 	const letterFxTriggerRef1 = useRef<() => void>()
 	const letterFxTriggerRef2 = useRef<() => void>()
 	const letterFxTriggerRef3 = useRef<() => void>()
@@ -254,6 +258,27 @@ export default function Home() {
 		}
 	}, [showFormModal, lenis])
 
+	useEffect(() => {
+		if (!glitchRef.current) return
+
+		const handleAnimationIteration = () => {
+			setTimeout(() => {
+				setDetailsWord('Fabric?')
+				setTimeout(() => {
+					setDetailsWord('Details')
+				}, 250)
+			}, 175)
+		}
+
+		const element = glitchRef.current
+
+		element.onanimationiteration = handleAnimationIteration
+
+		return () => {
+			element.onanimationiteration = null
+		}
+	}, [glitchRef])
+
 	return (
 		<ReactLenis
 			root
@@ -395,13 +420,12 @@ export default function Home() {
 							нашей свадьбы в&nbsp;своих нарядах.
 						</Paragraph>
 						<div
-							className='grid grid-cols-2 md:grid-cols-4 items-center justify-center flex-wrap gap-4'
+							className='grid grid-cols-2 md:grid-cols-3 items-center justify-center flex-wrap gap-4'
 							ref={getRefFunction(9, 'block')}
 						>
-							<Color color='#677965' />
-							<Color color='#DBDBDB' />
-							<Color color='#F2E3D1' />
-							<Color color='#000000' />
+							{colorsPalette.map(color => (
+								<Color color={color.color} key={color.name} />
+							))}
 						</div>
 					</Block>
 
@@ -454,6 +478,19 @@ export default function Home() {
 						</div>
 					</Block>
 
+					{/* Details */}
+					<Block>
+						<Text ref={getRefFunction(11, 'text')}>
+							<GlitchFx
+								speed='fast'
+								trigger='instant'
+								continuous
+								ref={glitchRef}
+							>
+								<Heading text={detailsWord} />
+							</GlitchFx>
+						</Text>
+					</Block>
 					{/* A few questions */}
 					<Block className='flex flex-col justify-center'>
 						<Heading

@@ -59,6 +59,6 @@ export const formItems: TFormItem[] = [
 	{
 		id: 'about',
 		type: 'textarea',
-		label: 'Нужно ли нам знать что-то еще?',
+		label: 'Расскажите что-нибудь о себе, может какой-то интересный факт?',
 	},
 ]

@@ -19,6 +19,7 @@ import axios from 'axios'
 import useFormState from '@/store/form.store'
 import { formItems } from '@/data/form.data'
 import ReactInputMask from 'react-input-mask'
+import { SparkleFx } from '@/lib/SparkleFx'
 
 type TForm = {
 	className?: string
@@ -36,6 +37,9 @@ interface IFormData {
 }
 
 const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
+	const [isButtonVisible, setIsButtonVisible] = useState<boolean>(false)
+	const buttonRef = useRef<HTMLButtonElement>(null)
+
 	const sanitizeInput = (input: string) => DOMPurify.sanitize(input)
 
 	const [phone, setPhone] = useState<string>('')
@@ -121,9 +125,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 				coupleName: sanitizeInput(coupleNameRef.current?.value || ''),
 				allergies: sanitizeInput(allergiesRef.current?.value || ''),
 				phone: sanitizeInput(phone),
-				telegram: sanitizeInput(
-					inputTelegramRef.current?.value || ''
-				),
+				telegram: sanitizeInput(inputTelegramRef.current?.value || ''),
 				radios: Object.keys(selectedRadios).reduce((acc, groupId) => {
 					acc[groupId] = getRadioText(groupId, selectedRadios[groupId])
 					return acc
@@ -268,6 +270,26 @@ Telegram: @${formData.telegram}
 			}
 		})
 		setSelectedRadios(defaultRadios)
+	}, [])
+
+	useEffect(() => {
+		if (!buttonRef.current) return
+
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				setIsButtonVisible(entry.isIntersecting)
+			},
+			{
+				root: null,
+				threshold: 0,
+			}
+		)
+
+		observer.observe(buttonRef.current)
+
+		return () => {
+			observer.disconnect()
+		}
 	}, [])
 
 	return (
@@ -509,14 +531,17 @@ Telegram: @${formData.telegram}
 						</ul>
 					</div>
 				)}
-				<Button
-					className='font-gyre-mono text-2xl bg-slate-950 text-zinc-200 py-6 w-full mt-4'
-					variant='faded'
-					type='submit'
-					isLoading={isSending}
-				>
-					Отправить
-				</Button>
+				<SparkleFx speed='fast' count={50} trigger={isButtonVisible}>
+					<Button
+						className='font-gyre-mono text-2xl bg-slate-950 text-zinc-200 py-6 w-full mt-4 relative z-10'
+						variant='faded'
+						type='submit'
+						isLoading={isSending}
+						ref={buttonRef}
+					>
+						Отправить
+					</Button>
+				</SparkleFx>
 			</div>
 		</form>
 	)
