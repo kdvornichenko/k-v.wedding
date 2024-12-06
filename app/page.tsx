@@ -565,7 +565,7 @@ export default function Home() {
 							>
 								its.agency
 							</Link>{' '}
-							width <Heart className='size-3.5 inline-flex lg:size-4' />
+							with <Heart className='size-3.5 inline-flex lg:size-4' />
 						</div>
 					</footer>
 				</div>
