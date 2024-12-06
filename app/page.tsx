@@ -29,6 +29,9 @@ import FormModal from '@/components/FormModal'
 import useFormState from '@/store/form.store'
 import { colorsPalette } from '@/data/colors.data'
 import { GlitchFx } from '@/lib/GlitchFX'
+import TelegramLink from '@/components/TelegramLink'
+import Link from 'next/link'
+import { Heart } from '@/components/icons/IconHeart'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -291,6 +294,7 @@ export default function Home() {
 			<div ref={containerRef} className='relative bg-stone-50 z-10 '>
 				<div className='relative z-20'>
 					<SlideShow totalImages={6} />
+
 					{/* Dear Guests! */}
 					<Block grid className='py-10'>
 						<Text className='py-10 xl:py-20'>
@@ -312,6 +316,7 @@ export default function Home() {
 							ref={getRefFunction(1, 'image')}
 						/>
 					</Block>
+
 					{/* When? */}
 					<Block className='flex items-center justify-center'>
 						<Text>
@@ -375,6 +380,7 @@ export default function Home() {
 							</Paragraph>
 						</Text>
 					</Block>
+
 					{/* Where? */}
 					<Block className='flex flex-col justify-center h-screen'>
 						<Text>
@@ -479,8 +485,11 @@ export default function Home() {
 					</Block>
 
 					{/* Details */}
-					<Block>
-						<Text ref={getRefFunction(11, 'text')}>
+					<Block className='flex flex-col justify-center'>
+						<Text
+							ref={getRefFunction(11, 'heading')}
+							className='text-center max-w-4xl mx-auto'
+						>
 							<GlitchFx
 								speed='fast'
 								trigger='instant'
@@ -489,6 +498,41 @@ export default function Home() {
 							>
 								<Heading text={detailsWord} />
 							</GlitchFx>
+							<Paragraph
+								ref={getRefFunction(11, 'text')}
+								className='flex flex-col gap-y-8'
+							>
+								<span>
+									Свои тёплые слова и&nbsp;пожелания приносите в&nbsp;сердцах,
+									а&nbsp;подарки&nbsp;&mdash; в конверте
+								</span>
+								<span>
+									Если вы&nbsp;заблудились, готовите сюрприз или у&nbsp;вас
+									появились какие-либо вопросы, вам с&nbsp;радостью поможет наш
+									замечательный организатор&nbsp;&mdash;
+									<TelegramLink person='a' />
+								</span>
+								<span>
+									P.S. Пожалуйста, не&nbsp;дарите нам цветы. Если вы&nbsp;хотите
+									сделать нам комплимент, замените букет игрушкой или лакомством
+									для{' '}
+									<span className='inline-flex items-center gap-4'>
+										Неко
+										<Image
+											width={40}
+											height={40}
+											alt='Neko'
+											src='/img/sticker-neko.webp'
+											className='aspect-[0.76]'
+										/>
+									</span>
+								</span>
+
+								<span className='text-sm 2xl:text-base text-slate-950/80'>
+									P.S.S. Если решите подарить что-то для Неко, пожалуйста,
+									напишите нам заранее &lt;3
+								</span>
+							</Paragraph>
 						</Text>
 					</Block>
 					{/* A few questions */}
@@ -504,6 +548,26 @@ export default function Home() {
 
 						<Form ref={getRefFunction(10, 'form')} className='mt-4 lg:mt-20' />
 					</Block>
+					<footer className='flex w-full lg:justify-end p-4 lg:p-10 bg-slate-950'>
+						<div className='font-gyre-mono text-zinc-50 text-sm lg:text-base'>
+							<Link
+								href='https://github.com/kdvornichenko'
+								target='_blank'
+								className='underline underline-offset-4 hover:text-zinc-300 transition-colors'
+							>
+								kdvornichenko
+							</Link>{' '}
+							from{' '}
+							<Link
+								href='https://its.agency'
+								target='_blank'
+								className='underline underline-offset-4 hover:text-zinc-300 transition-colors'
+							>
+								its.agency
+							</Link>{' '}
+							width <Heart className='size-3.5 inline-flex lg:size-4' />
+						</div>
+					</footer>
 				</div>
 				<div className='inset-0 pointer-events-none absolute z-10'>
 					<div className='w-full h-full bg-[length:128px_128px] bg-repeat bg-[url("/img/pattern.png")] opacity-15'></div>

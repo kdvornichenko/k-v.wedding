@@ -7,12 +7,16 @@ type TTelegramLink = {
 
 const TelegramLink: FC<TTelegramLink> = ({ person }) => {
 	const personLink = useMemo(() => {
-		return person === 'k' ? 'mercyyy813' : person === 'v' ? 'Weikaaa' : 'anna_rassskazova'
+		return person === 'k'
+			? 'mercyyy813'
+			: person === 'v'
+			? 'Weikaaa'
+			: 'anna_rassskazova'
 	}, [person])
 
 	return (
 		<Link
-			className='text-sky-600 underline underline-offset-4'
+			className='text-sky-600 underline underline-offset-8'
 			href={`https://t.me/${personLink}`}
 			target='_blank'
 		>
