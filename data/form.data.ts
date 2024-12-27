@@ -25,6 +25,15 @@ export const formItems: TFormItem[] = [
 		],
 	},
 	{
+		id: 'meal',
+		type: 'radio',
+		label: 'Мясо/Рыба',
+		options: [
+			{ value: 'beef', text: 'Мясо', isDefault: true },
+			{ value: 'fish', text: 'Рыба' },
+		],
+	},
+	{
 		id: 'alcohol',
 		type: 'checkbox',
 		label: 'Алкоголь?',

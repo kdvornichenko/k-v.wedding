@@ -197,6 +197,7 @@ Telegram: @${formData.telegram}
 						? formData.checkboxValues['alcohol'].join(', ')
 						: 'Не выбрано'
 			  }
+Еда: ${formData.radios.meal || 'Не указано'}
 Дополнительная информация: ${formData.about || 'Нет'}`
 
 		// Отправка сообщения

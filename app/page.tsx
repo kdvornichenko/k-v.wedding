@@ -421,9 +421,18 @@ export default function Home() {
 							ref={getRefFunction(9, 'heading')}
 							className='text-center'
 						/>
-						<Paragraph className='text-center' ref={getRefFunction(9, 'text')}>
-							Мы&nbsp;будем признательны, если вы&nbsp;поддержите цветовую гамму
-							нашей свадьбы в&nbsp;своих нарядах.
+						<Paragraph
+							className='text-center flex flex-col gap-y-4'
+							ref={getRefFunction(9, 'text')}
+						>
+							<span>
+								Мы&nbsp;будем признательны, если вы&nbsp;поддержите цветовую
+								гамму нашей свадьбы в&nbsp;своих нарядах
+							</span>
+							<span className='text-sm 2xl:text-lg text-slate-950/80'>
+								P.S. Пожалуйста, воздержитесь от&nbsp;использования принтов
+								и&nbsp;белого цвета
+							</span>
 						</Paragraph>
 						<div
 							className='grid grid-cols-2 md:grid-cols-3 items-center justify-center flex-wrap gap-4'
@@ -446,7 +455,7 @@ export default function Home() {
 						<div>
 							<div className='mt-10 lg:mt-16 flex flex-col gap-y-3'>
 								<PlanItem
-									time='15:30'
+									time='15:00'
 									text='Сбор гостей'
 									ref={getRefFunction(4, 'plan')}
 								>
@@ -523,7 +532,7 @@ export default function Home() {
 											height={40}
 											alt='Neko'
 											src='/img/sticker-neko.webp'
-											className='aspect-[0.76]'
+											className='aspect-[0.76] w-10'
 										/>
 									</span>
 								</span>
@@ -543,7 +552,7 @@ export default function Home() {
 						/>
 						<Paragraph className='mt-4' ref={getRefFunction(10, 'text')}>
 							Пожалуйста, заполните данную анкету до{' '}
-							<span className='underline underline-offset-4'>01.01.2025</span>
+							<span className='underline underline-offset-4'>14.02.2025</span>
 						</Paragraph>
 
 						<Form ref={getRefFunction(10, 'form')} className='mt-4 lg:mt-20' />
