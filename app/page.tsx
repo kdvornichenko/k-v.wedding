@@ -476,7 +476,7 @@ export default function Home() {
 									<Dinner className='size-full' />
 								</PlanItem>
 								<PlanItem
-									time='20:30'
+									time='21:00'
 									text='Торт'
 									ref={getRefFunction(7, 'plan')}
 								>
