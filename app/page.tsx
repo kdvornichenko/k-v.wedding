@@ -455,21 +455,21 @@ export default function Home() {
 						<div>
 							<div className='mt-10 lg:mt-16 flex flex-col gap-y-3'>
 								<PlanItem
-									time='15:00'
+									time='16:00'
 									text='Сбор гостей'
 									ref={getRefFunction(4, 'plan')}
 								>
 									<Location className='size-full' />
 								</PlanItem>
 								<PlanItem
-									time='16:00'
+									time='17:00'
 									text='Свадебная церемония'
 									ref={getRefFunction(5, 'plan')}
 								>
 									<Rings className='size-full' />
 								</PlanItem>
 								<PlanItem
-									time='17:00'
+									time='17:30'
 									text='Банкет'
 									ref={getRefFunction(6, 'plan')}
 								>
