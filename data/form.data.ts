@@ -7,7 +7,7 @@ export const formItems: TFormItem[] = [
 		type: 'radio',
 		label: 'Придете?',
 		options: [
-			{ value: 'solo', text: 'Приду один (одна)', isDefault: true },
+			{ value: 'solo', text: 'Приду', isDefault: true },
 			// {
 			// 	value: 'couple',
 			// 	text: 'Приду с половинкой',
