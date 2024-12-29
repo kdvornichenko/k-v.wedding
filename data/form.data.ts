@@ -12,7 +12,7 @@ export const formItems: TFormItem[] = [
 			// 	value: 'couple',
 			// 	text: 'Приду с половинкой',
 			// },
-			{ value: 'nope', text: 'Не смогу присутствовать' },
+			{ value: 'nope', text: 'Не приду :(' },
 		],
 	},
 	{
