@@ -8,10 +8,10 @@ export const formItems: TFormItem[] = [
 		label: 'Придете?',
 		options: [
 			{ value: 'solo', text: 'Приду один (одна)', isDefault: true },
-			{
-				value: 'couple',
-				text: 'Приду с половинкой',
-			},
+			// {
+			// 	value: 'couple',
+			// 	text: 'Приду с половинкой',
+			// },
 			{ value: 'nope', text: 'Не смогу присутствовать' },
 		],
 	},
