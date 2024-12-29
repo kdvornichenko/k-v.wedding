@@ -382,7 +382,7 @@ export default function Home() {
 					</Block>
 
 					{/* Where? */}
-					<Block className='flex flex-col justify-center h-screen'>
+					<Block className='flex flex-col justify-center min-h-screen py-20'>
 						<Text>
 							<Heading text='Where?' ref={getRefFunction(3, 'heading')} />
 							<Paragraph ref={getRefFunction(3, 'text')} className='opacity-0'>
@@ -429,8 +429,8 @@ export default function Home() {
 								Мы&nbsp;будем признательны, если вы&nbsp;поддержите цветовую
 								гамму нашей свадьбы в&nbsp;своих нарядах
 							</span>
-							<span className='text-md 2xl:text-xl text-slate-950/80'>
-								P.S. Но это не значит, что парням нужен именно костюм такого цвета. Костюм вообще не обязателен
+							<span className='text-base 2xl:text-xl text-slate-950/80'>
+								P.S. Костюм не обязателен
 							</span>
 							<span className='text-sm 2xl:text-lg text-slate-950/80'>
 								P.S.S. Пожалуйста, воздержитесь от&nbsp;использования принтов
