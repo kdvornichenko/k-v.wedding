@@ -1,7 +1,8 @@
 import { TFormItem } from '@/types/form.type'
 
 export const formItems: TFormItem[] = [
-	{ id: 'name', type: 'input', label: 'Ваше Имя и Фамилия' },
+	{ id: 'name', type: 'input', label: 'Имя' },
+	{ id: 'surname', type: 'input', label: 'Фамилия' },
 	{
 		id: 'attendance',
 		type: 'radio',

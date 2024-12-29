@@ -27,6 +27,7 @@ type TForm = {
 
 interface IFormData {
 	name: string
+	surname: string
 	phone: string
 	telegram?: string
 	coupleName?: string
@@ -71,6 +72,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 	const allergiesRef = useRef<HTMLTextAreaElement>(null)
 	const coupleNameRef = useRef<HTMLInputElement>(null)
 	const inputNameRef = useRef<HTMLInputElement>(null)
+	const inputSurnameRef = useRef<HTMLInputElement>(null)
 	const inputTelegramRef = useRef<HTMLInputElement>(null)
 	const aboutRef = useRef<HTMLTextAreaElement>(null)
 
@@ -122,6 +124,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 			// Собираем данные формы
 			const formData = {
 				name: sanitizeInput(inputNameRef.current?.value || ''),
+				surname: sanitizeInput(inputSurnameRef.current?.value || ''),
 				coupleName: sanitizeInput(coupleNameRef.current?.value || ''),
 				allergies: sanitizeInput(allergiesRef.current?.value || ''),
 				phone: sanitizeInput(phone),
@@ -159,7 +162,10 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 		}
 
 		if (!sanitizeInput(inputNameRef.current?.value || '').trim().length) {
-			newErrors['name'] = 'Заполните ваше имя'
+			newErrors['name'] = 'Заполните Имя'
+		}
+		if (!sanitizeInput(inputSurnameRef.current?.value || '').trim().length) {
+			newErrors['surname'] = 'Заполните Фамилию'
 		}
 
 		if (
@@ -182,11 +188,11 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 		const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`
 
 		const message = !willBeAttended
-			? `${formData.name} не придет
+			? `${formData.name} ${formData.surname} не придет
 ${formData.phone && `Телефон: ${formData.phone}`}
 ${formData.telegram && `Telegram: @${formData.telegram}`}`
 			: `Анкета гостя:\n
-Имя: ${formData.name}
+ФИО: ${formData.name} ${formData.surname}
 Телефон: ${formData.phone}
 Telegram: @${formData.telegram}
 Присутствие: ${formData.radios.attendance || 'Не указано'}
@@ -254,7 +260,12 @@ Telegram: @${formData.telegram}
 	}
 
 	const isDisabled = (itemId: string) => {
-		if (itemId !== 'attendance' && itemId !== 'name' && !willBeAttended) {
+		if (
+			itemId !== 'attendance' &&
+			itemId !== 'name' &&
+			itemId !== 'surname' &&
+			!willBeAttended
+		) {
 			return true
 		}
 		return false
@@ -439,7 +450,13 @@ Telegram: @${formData.telegram}
 					} else
 						return (
 							<Input
-								ref={item.id === 'name' ? inputNameRef : null}
+								ref={
+									item.id === 'name'
+										? inputNameRef
+										: item.id === 'surname'
+										? inputSurnameRef
+										: null
+								}
 								key={`input-${item.label}`}
 								type='text'
 								variant='underlined'

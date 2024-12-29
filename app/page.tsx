@@ -429,8 +429,11 @@ export default function Home() {
 								Мы&nbsp;будем признательны, если вы&nbsp;поддержите цветовую
 								гамму нашей свадьбы в&nbsp;своих нарядах
 							</span>
+							<span className='text-md 2xl:text-xl text-slate-950/80'>
+								P.S. Но это не значит, что парням нужен именно костюм такого цвета. Костюм вообще не обязателен
+							</span>
 							<span className='text-sm 2xl:text-lg text-slate-950/80'>
-								P.S. Пожалуйста, воздержитесь от&nbsp;использования принтов
+								P.S.S. Пожалуйста, воздержитесь от&nbsp;использования принтов
 								и&nbsp;белого цвета
 							</span>
 						</Paragraph>
