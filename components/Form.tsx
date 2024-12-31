@@ -178,6 +178,11 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 		if (!sanitizeInput(phone || '').trim().length && willBeAttended) {
 			newErrors['phone'] = 'Введите номер телефона'
 		}
+		if (
+			!sanitizeInput(aboutRef.current?.value || '').trim().length
+		) {
+			newErrors['about'] = 'Заполните немного информции "О себе"'
+		}
 		setErrors(newErrors)
 		return Object.keys(newErrors).length === 0
 	}
@@ -527,6 +532,7 @@ Telegram: @${formData.telegram}
 							size='lg'
 							placeholder={item.label}
 							isDisabled={isDisabled(item.id)}
+							isRequired
 							classNames={{
 								inputWrapper: `transition-all mt-4 lg:mt-6 ${
 									errors[item.id] ? 'border-red-500' : inputClassNames
