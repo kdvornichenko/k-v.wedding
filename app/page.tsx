@@ -555,7 +555,7 @@ export default function Home() {
 						/>
 						<Paragraph className='mt-4' ref={getRefFunction(10, 'text')}>
 							Пожалуйста, заполните данную анкету до{' '}
-							<span className='underline underline-offset-4'>14.02.2025</span>
+							<span className='underline underline-offset-4'>01.04.2025</span>
 						</Paragraph>
 
 						<Form ref={getRefFunction(10, 'form')} className='mt-4 lg:mt-20' />
