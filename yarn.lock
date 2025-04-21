@@ -149,7 +149,7 @@
     "@react-types/shared" "3.28.0"
     clsx "^1.2.1"
 
-"@heroui/system@>=2.4.7":
+"@heroui/system@^2.4.13", "@heroui/system@>=2.4.7":
   version "2.4.13"
   resolved "https://registry.npmmirror.com/@heroui/system/-/system-2.4.13.tgz"
   integrity sha512-4kL9SSEt+ohEbAsFCsZC6hdjBmwghEjeYsVytkOwI0rkXfu57onlZhJqvpIMnausHFL9DJ/oxzBghvFaA7dUxw==
@@ -163,7 +163,7 @@
     "@react-stately/utils" "3.10.5"
     "@react-types/datepicker" "3.11.0"
 
-"@heroui/theme@>=2.4.6":
+"@heroui/theme@^2.4.13", "@heroui/theme@>=2.4.6":
   version "2.4.13"
   resolved "https://registry.npmmirror.com/@heroui/theme/-/theme-2.4.13.tgz"
   integrity sha512-W1wm/x3dx9rZXNdyvjQRueK+9ieTpT2icyttGuVEn7NWgzMhpIbEKsAwtTLZGc5zMHJE2cxJQ/jpdCR8HBe0Dw==
