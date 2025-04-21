@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heroui/card": "^2.2.16",
     "@nextui-org/accordion": "^2.0.40",
     "@nextui-org/button": "^2.0.38",
     "@nextui-org/checkbox": "^2.1.5",
@@ -25,6 +26,7 @@
     "@studio-freight/react-lenis": "^0.0.47",
     "@types/react-input-mask": "^3.0.6",
     "@yandex/ymaps3-types": "^1.0.15285770",
+    "@yuvalkarif/gradient-blob": "^1.0.0",
     "axios": "^1.7.8",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",

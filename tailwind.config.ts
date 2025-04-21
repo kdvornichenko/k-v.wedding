@@ -11,6 +11,15 @@ const config: Config = {
   ],
 	theme: {
 		extend: {
+			keyframes: {
+				flip: {
+					'0%': { transform: 'rotateX(0deg)', opacity: '0.9' },
+					'100%': { transform: 'rotateX(180deg)' }
+				},
+			},
+			animation: {
+				flip: 'flip 1s forwards infinite'
+			},
 			fontFamily: {
 				'kudry': ['var(--font-kudry)', 'sans-serif'],
 				'geist-mono': ['var(--font-geist-mono)', 'monospace'],
