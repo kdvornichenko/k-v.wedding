@@ -1,3 +1,5 @@
+'use client'
+
 import React, {
 	forwardRef,
 	useRef,
@@ -24,6 +26,7 @@ import {
 	YMap as YMapInstance,
 } from '@yandex/ymaps3-types'
 import theme from '@/public/customization.json'
+import { useLangStore } from '@/store/lang.store'
 
 type TMap = {
 	className?: string
@@ -35,6 +38,9 @@ const Map = forwardRef<HTMLDivElement, TMap>(({ className }, ref) => {
 	const containerRef = useRef<HTMLDivElement>(null)
 	const [mapInstance, setMapInstance] = useState<YMapInstance | null>(null)
 	const api = process.env.NEXT_PUBLIC_YMAPS_API
+
+	const lang = useLangStore(state => state.lang) // <--- сюда
+	const mapLang = lang === 'RU' ? 'ru_RU' : 'en_US' // <--- логика перевода карты
 
 	const params = useMemo(
 		() => ({
@@ -110,7 +116,7 @@ const Map = forwardRef<HTMLDivElement, TMap>(({ className }, ref) => {
 
 	return (
 		<div className={className ?? ''} ref={mergeRefs(ref, containerRef)}>
-			<YMapComponentsProvider apiKey={api} lang='ru_RU'>
+			<YMapComponentsProvider apiKey={api} lang={mapLang}>
 				<YMap ref={mapRefCallback} location={params} mode='vector' theme='dark'>
 					<YMapDefaultSchemeLayer
 						customization={theme as VectorCustomization}
