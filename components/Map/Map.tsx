@@ -39,8 +39,8 @@ const Map = forwardRef<HTMLDivElement, TMap>(({ className }, ref) => {
 	const [mapInstance, setMapInstance] = useState<YMapInstance | null>(null)
 	const api = process.env.NEXT_PUBLIC_YMAPS_API
 
-	const lang = useLangStore(state => state.lang) // <--- сюда
-	const mapLang = lang === 'RU' ? 'ru_RU' : 'en_US' // <--- логика перевода карты
+	const lang = useLangStore(state => state.lang)
+	const mapLang = lang === 'RU' ? 'ru_RU' : 'en_US'
 
 	const params = useMemo(
 		() => ({
@@ -116,7 +116,7 @@ const Map = forwardRef<HTMLDivElement, TMap>(({ className }, ref) => {
 
 	return (
 		<div className={className ?? ''} ref={mergeRefs(ref, containerRef)}>
-			<YMapComponentsProvider apiKey={api} lang={mapLang}>
+			<YMapComponentsProvider apiKey={api} lang={mapLang} key={mapLang}>
 				<YMap ref={mapRefCallback} location={params} mode='vector' theme='dark'>
 					<YMapDefaultSchemeLayer
 						customization={theme as VectorCustomization}
@@ -132,6 +132,7 @@ const Map = forwardRef<HTMLDivElement, TMap>(({ className }, ref) => {
 			</YMapComponentsProvider>
 		</div>
 	)
+
 })
 
 Map.displayName = 'Map'
