@@ -1,3 +1,5 @@
+'use client'
+
 import {
 	Modal,
 	ModalBody,
@@ -11,6 +13,7 @@ import { Snippet } from '@nextui-org/snippet'
 import { Button } from '@nextui-org/button'
 import { Heart } from './icons/IconHeart'
 import useFormState from '@/store/form.store'
+import { Translations, useTranslation } from '@/lib/i18n'
 
 const FormModal = () => {
 	const {
@@ -20,6 +23,11 @@ const FormModal = () => {
 		willBeAttended,
 		formError,
 	} = useFormState()
+
+	const { t } = useTranslation()
+	const formSendedTranslation = t(
+		'formSendedModal'
+	) as Translations['RU']['formSendedModal']
 
 	return (
 		<Modal
@@ -33,37 +41,38 @@ const FormModal = () => {
 				{onClose => (
 					<>
 						<ModalHeader className='flex flex-col gap-1 font-kudry text-3xl'>
-							{formSended ? 'Ответы отправлены!' : 'Ошибка при отправке формы'}
+							{formSended
+								? formSendedTranslation.success
+								: formSendedTranslation.error}
 						</ModalHeader>
+
 						<ModalBody className='font-gyre-mono text-xl'>
 							{formSended ? (
 								willBeAttended ? (
 									<div className='flex flex-col gap-y-4'>
-										<span>Спасибо! С нетерпением ждем Вас на свадьбе!</span>
+										<span>{formSendedTranslation.successAttendedTitle}</span>
 										<span>
-											Если есть вопросы насчет свадьбы или хотите что-то
-											поменять в ответах, то пишите нам{' '}
+											{formSendedTranslation.successAttendedHelp}{' '}
 											<TelegramLink person='k' /> <TelegramLink person='v' />
 										</span>
 										<span>
-											Если есть что-то, о чем нам знать не надо, то можете
-											пошушукаться с нашим организатором{' '}
+											{formSendedTranslation.successAttendedOrganizer}{' '}
 											<TelegramLink person='a' />
 										</span>
 									</div>
 								) : (
-									<div>
-										<span>Очень жаль 😢 Если передумаете, напишите нам </span>
-										<TelegramLink person='k' /> <TelegramLink person='v' />
+									<div className='flex flex-col gap-y-4'>
+										<span>{formSendedTranslation.successNotAttendedTitle}</span>
+										<span>
+											{formSendedTranslation.successNotAttendedHelp}{' '}
+											<TelegramLink person='k' /> <TelegramLink person='v' />
+										</span>
 									</div>
 								)
 							) : (
-								<>
+								<div className='flex flex-col gap-y-4'>
 									<div>
-										<span>
-											Ошибка при отправке формы. Пожалуйста, скопируйте это
-											сообщение нажав на значок{' '}
-										</span>
+										<span>{formSendedTranslation.errorCopyInstruction} </span>
 										<Snippet
 											symbol=''
 											variant='bordered'
@@ -73,10 +82,12 @@ const FormModal = () => {
 												base: 'gap-0',
 												copyButton: 'opacity-100',
 											}}
-										/>{' '}
-										<span>(или сделайте скриншот) и отправьте мне </span>
+										/>
+
+										<span>{formSendedTranslation.errorScreenshot} </span>
 										<TelegramLink person='k' />
 									</div>
+
 									<Snippet
 										symbol=''
 										variant='bordered'
@@ -85,16 +96,16 @@ const FormModal = () => {
 									>
 										{formError}
 									</Snippet>
+
 									<span className='text-xs opacity-30'>
-										Да-да, мне впадлу было делать логирование и привязывать
-										какую-то БД
+										{formSendedTranslation.errorNote}
 									</span>
-								</>
+								</div>
 							)}
 						</ModalBody>
+
 						<ModalFooter className='flex items-center justify-between'>
 							<p className='text-lg font-kudry'>K&V</p>
-
 							<Button
 								color='primary'
 								className='bg-slate-950'

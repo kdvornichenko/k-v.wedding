@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
 import { NextUIProvider } from '@nextui-org/system'
+import { Suspense } from 'react'
 
 const geistSans = localFont({
 	src: './fonts/Kudry.woff',
@@ -37,7 +38,9 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} ${gyreMono.variable} antialiased overflow-x-hidden w-screen`}
 			>
-				<NextUIProvider>{children}</NextUIProvider>
+				<NextUIProvider>
+					<Suspense>{children}</Suspense>
+				</NextUIProvider>
 			</body>
 		</html>
 	)

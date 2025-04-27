@@ -32,10 +32,23 @@ import { GlitchFx } from '@/lib/GlitchFX'
 import TelegramLink from '@/components/TelegramLink'
 import Link from 'next/link'
 import { Heart } from '@/components/icons/IconHeart'
+import {
+	Dropdown,
+	DropdownTrigger,
+	DropdownMenu,
+	DropdownItem,
+} from '@heroui/dropdown'
+import { Button } from '@nextui-org/button'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Translations, useTranslation } from '@/lib/i18n'
+import { useLangStore } from '@/store/lang.store'
 
 gsap.registerPlugin(ScrollTrigger)
 
+type Lang = 'RU' | 'EN'
+
 export default function Home() {
+	const router = useRouter()
 	const [isMapLoaded, setIsMapLoaded] = useState(false)
 	const { isSlideShowComplete } = useSlideShowStore()
 	const { showFormModal } = useFormState()
@@ -54,6 +67,12 @@ export default function Home() {
 			}
 		>
 	>({})
+
+	const searchParams = useSearchParams()
+
+	const { t, lang } = useTranslation()
+	const setLang = useLangStore(state => state.setLang)
+
 	const containerRef = useRef<HTMLDivElement>(null)
 	const addressRef = useRef<HTMLAnchorElement>(null)
 	const fingerRef = useRef<SVGSVGElement>(null)
@@ -63,6 +82,10 @@ export default function Home() {
 	const letterFxTriggerRef3 = useRef<() => void>()
 	const letterFxTriggerRef4 = useRef<() => void>()
 	const lenis = useLenis()
+	const address = t('address') as Translations['RU']['address']
+	const details = t('details') as Translations['RU']['details']
+	const plan = t('plan') as { time: string; text: string }[]
+	const icons = [Location, Rings, Dinner, Cake, Clock]
 
 	const refFunctions = useRef<Record<string, (el: HTMLElement | null) => void>>(
 		{}
@@ -90,9 +113,19 @@ export default function Home() {
 	)
 
 	useEffect(() => {
+		const langParam = searchParams.get('lang')
+
+		if (langParam === 'ru') {
+			setLang('RU')
+		} else if (langParam === 'en') {
+			setLang('EN')
+		}
+	}, [searchParams, setLang])
+
+	useEffect(() => {
 		setIsMapLoaded(true)
 
-		const textElement = screenRefs.current[2]?.text // Убедитесь, что это правильный элемент
+		const textElement = screenRefs.current[2]?.text
 
 		if (textElement) {
 			ScrollTrigger.create({
@@ -239,11 +272,6 @@ export default function Home() {
 		})
 	}, [isMapLoaded])
 
-	const getYearPhrase = (targetYear: number = 2025): string => {
-		const currentYear = new Date().getFullYear()
-		return currentYear === targetYear ? 'этом' : 'следующем'
-	}
-
 	useEffect(() => {
 		if (!isSlideShowComplete || lenis?.scroll >= 20) return
 
@@ -282,6 +310,10 @@ export default function Home() {
 		}
 	}, [glitchRef])
 
+	function HtmlText({ text }: { text: string }) {
+		return <span dangerouslySetInnerHTML={{ __html: text }} />
+	}
+
 	return (
 		<ReactLenis
 			root
@@ -291,6 +323,59 @@ export default function Home() {
 
 			<FormModal />
 
+			<Dropdown
+				backdrop='blur'
+				shouldCloseOnScroll={false}
+				motionProps={{
+					initial: { opacity: 0 },
+					animate: { opacity: 1 },
+					exit: { opacity: 0 },
+				}}
+				classNames={{
+					base: 'fixed right-4 bottom-16 z-20 w-20',
+				}}
+				onOpenChange={isOpen => {
+					if (isOpen) {
+						lenis?.stop()
+					} else {
+						lenis?.start()
+					}
+				}}
+			>
+				<DropdownTrigger>
+					<Button
+						className='capitalize fixed right-4 bottom-4 z-20 bg-black text-white'
+						variant='solid'
+					>
+						{lang}
+					</Button>
+				</DropdownTrigger>
+
+				<DropdownMenu
+					disallowEmptySelection
+					aria-label='Single selection example'
+					selectedKeys={new Set([lang])}
+					selectionMode='single'
+					onSelectionChange={keys => {
+						const selected = Array.from(keys)[0] as Lang
+
+						setLang(selected)
+
+						const params = new URLSearchParams(searchParams.toString())
+
+						if (selected === 'RU') {
+							params.set('lang', 'ru')
+						} else {
+							params.set('lang', 'en')
+						}
+
+						router.replace(`?${params.toString()}`, { scroll: false }) // Обновляем урл
+					}}
+				>
+					<DropdownItem key='RU'>RU</DropdownItem>
+					<DropdownItem key='EN'>EN</DropdownItem>
+				</DropdownMenu>
+			</Dropdown>
 			<div ref={containerRef} className='relative bg-stone-50 z-10 '>
 				<div className='relative z-20'>
 					<SlideShow totalImages={6} />
@@ -300,11 +385,7 @@ export default function Home() {
 						<Text className='py-10 xl:py-20'>
 							<Heading text='Dear Guests!' ref={getRefFunction(1, 'heading')} />
 							<Paragraph ref={getRefFunction(1, 'text')}>
-								<>
-									Один день в {getYearPhrase()} году станет для нас особенно
-									важным, и мы хотим провести его в кругу близких и друзей!
-									<br />С большим удовольствием приглашаем Вас на нашу свадьбу!
-								</>
+								<HtmlText text={t('guests')} />
 							</Paragraph>
 						</Text>
 						<Image
@@ -386,25 +467,26 @@ export default function Home() {
 						<Text>
 							<Heading text='Where?' ref={getRefFunction(3, 'heading')} />
 							<Paragraph ref={getRefFunction(3, 'text')} className='opacity-0'>
-								Наш праздник пройдет в&nbsp;ресторане &quot;Русская
-								рыбалка&quot;
+								<HtmlText text={address.placeText1} />
 								<br />
 								<span className='font-semibold'>
-									По адресу:
+									<HtmlText text={address.atAddress} />
+
 									<a
 										href='https://yandex.ru/maps/2/saint-petersburg/?ll=29.818303%2C60.170111&mode=routes&rtext=~60.170556%2C29.813107&rtt=taxi&ruri=~ymapsbm1%3A%2F%2Forg%3Foid%3D1059804378&z=17'
 										target='_blank'
 										ref={addressRef}
 										className=' border px-1 pb-1 border-slate-950/0 rounded-md relative inline-block translate-y-0.5  will-change-transform'
 									>
-										Пос. Комарово, Приморское шоссе, 452 А
+										<HtmlText text={address.addressText} />
+
 										<Finger
 											ref={fingerRef}
 											className='absolute w-8 h-8 end-4 top-full translate-y-1/2 opacity-0 will-change-transform'
 										/>
 									</a>
 									<br />
-									банкетный зал &quot;Летний&quot;
+									<HtmlText text={address.hallName} />
 								</span>
 							</Paragraph>
 							<Map
@@ -426,15 +508,13 @@ export default function Home() {
 							ref={getRefFunction(9, 'text')}
 						>
 							<span>
-								Мы&nbsp;будем признательны, если вы&nbsp;поддержите цветовую
-								гамму нашей свадьбы в&nbsp;своих нарядах
+								<HtmlText text={t('dressCode')} />
 							</span>
 							<span className='text-base 2xl:text-xl text-slate-950/80'>
-								P.S. Костюм не обязателен
+								<HtmlText text={t('suit')} />
 							</span>
 							<span className='text-sm 2xl:text-lg text-slate-950/80'>
-								P.S.S. Пожалуйста, воздержитесь от&nbsp;использования принтов
-								и&nbsp;белого цвета
+								<HtmlText text={t('whiteColor')} />
 							</span>
 						</Paragraph>
 						<div
@@ -457,41 +537,19 @@ export default function Home() {
 						</Text>
 						<div>
 							<div className='mt-10 lg:mt-16 flex flex-col gap-y-3'>
-								<PlanItem
-									time='16:00'
-									text='Сбор гостей'
-									ref={getRefFunction(4, 'plan')}
-								>
-									<Location className='size-full' />
-								</PlanItem>
-								<PlanItem
-									time='17:00'
-									text='Свадебная церемония'
-									ref={getRefFunction(5, 'plan')}
-								>
-									<Rings className='size-full' />
-								</PlanItem>
-								<PlanItem
-									time='17:30'
-									text='Банкет'
-									ref={getRefFunction(6, 'plan')}
-								>
-									<Dinner className='size-full' />
-								</PlanItem>
-								<PlanItem
-									time='21:00'
-									text='Торт'
-									ref={getRefFunction(7, 'plan')}
-								>
-									<Cake className='size-full' />
-								</PlanItem>
-								<PlanItem
-									time='22:00'
-									text='Завершение вечера'
-									ref={getRefFunction(8, 'plan')}
-								>
-									<Clock className='size-full' />
-								</PlanItem>
+								{plan.map((item, index) => {
+									const Icon = icons[index]
+									return (
+										<PlanItem
+											key={item.time}
+											time={item.time}
+											text={item.text}
+											ref={getRefFunction(4 + index, 'plan')}
+										>
+											<Icon className='size-full' />
+										</PlanItem>
+									)
+								})}
 							</div>
 						</div>
 					</Block>
@@ -515,21 +573,18 @@ export default function Home() {
 								className='flex flex-col gap-y-8'
 							>
 								<span>
-									Свои тёплые слова и&nbsp;пожелания приносите в&nbsp;сердцах,
-									а&nbsp;подарки&nbsp;&mdash; в конверте
+									<HtmlText text={details.warmWishes} />
 								</span>
+
 								<span>
-									Если вы&nbsp;заблудились, готовите сюрприз или у&nbsp;вас
-									появились какие-либо вопросы, вам с&nbsp;радостью поможет наш
-									замечательный организатор&nbsp;&mdash;
+									<HtmlText text={details.organizerHelp} />
 									<TelegramLink person='a' />
 								</span>
+
 								<span>
-									P.S. Пожалуйста, не&nbsp;дарите нам цветы. Если вы&nbsp;хотите
-									сделать нам комплимент, замените букет игрушкой или лакомством
-									для{' '}
+									<HtmlText text={details.noFlowers} />{' '}
 									<span className='inline-flex items-center gap-4'>
-										Неко
+										{details.nekoName}
 										<Image
 											width={40}
 											height={40}
@@ -541,8 +596,7 @@ export default function Home() {
 								</span>
 
 								<span className='text-sm 2xl:text-base text-slate-950/80'>
-									P.S.S. Если решите подарить что-то для Неко, пожалуйста,
-									напишите нам заранее &lt;3
+									<HtmlText text={details.nekoGift} />
 								</span>
 							</Paragraph>
 						</Text>
@@ -554,8 +608,7 @@ export default function Home() {
 							ref={getRefFunction(10, 'heading')}
 						/>
 						<Paragraph className='mt-4' ref={getRefFunction(10, 'text')}>
-							Пожалуйста, заполните данную анкету до{' '}
-							<span className='underline underline-offset-4'>01.04.2025</span>
+							<HtmlText text={t('quetionaireTitle')} />
 						</Paragraph>
 
 						<Form ref={getRefFunction(10, 'form')} className='mt-4 lg:mt-20' />

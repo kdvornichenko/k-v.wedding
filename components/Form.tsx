@@ -4,22 +4,23 @@ import React, {
 	FormEvent,
 	forwardRef,
 	useEffect,
-	useMemo,
 	useRef,
 	useState,
 } from 'react'
 import { RadioGroup, Radio } from '@nextui-org/radio'
-import { Button } from '@nextui-org/button'
-import { cn } from '@nextui-org/theme'
-import { Input, Textarea } from '@nextui-org/input'
 import { CheckboxGroup, Checkbox } from '@nextui-org/checkbox'
-import { Heart } from './icons/IconHeart'
+import { Input, Textarea } from '@nextui-org/input'
+import { cn } from '@nextui-org/theme'
+import ReactInputMask from 'react-input-mask'
 import DOMPurify from 'dompurify'
 import axios from 'axios'
-import useFormState from '@/store/form.store'
-import { formItems } from '@/data/form.data'
-import ReactInputMask from 'react-input-mask'
+
+import { Heart } from './icons/IconHeart'
 import { SparkleFx } from '@/lib/SparkleFx'
+import { Translations, useTranslation } from '@/lib/i18n'
+import { formItems } from '@/data/form.data'
+import useFormState from '@/store/form.store'
+import { Button } from '@nextui-org/button'
 
 type TForm = {
 	className?: string
@@ -38,27 +39,9 @@ interface IFormData {
 }
 
 const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
-	const [isButtonVisible, setIsButtonVisible] = useState<boolean>(false)
-	const buttonRef = useRef<HTMLButtonElement>(null)
+	const { t } = useTranslation()
+	const form = t('form') as Translations['RU']['form']
 
-	const sanitizeInput = (input: string) => DOMPurify.sanitize(input)
-
-	const [phone, setPhone] = useState<string>('')
-	const [checkboxValues, setCheckboxValues] = useState<string[]>([
-		'alcohol-nope',
-	])
-	const [selectedRadios, setSelectedRadios] = useState<Record<string, string>>(
-		{}
-	)
-	const labelClassNames = useMemo(
-		() => 'text-slate-950 text-2xl lg:text-3xl mb-3 after:content-[""]',
-		[]
-	)
-	const inputClassNames = useMemo(
-		() => 'border-slate-950 data-[hover=true]:border-slate-950/50',
-		[]
-	)
-	const [errors, setErrors] = useState<Record<string, string>>({})
 	const {
 		setShowFormModal,
 		setFormSended,
@@ -69,122 +52,141 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 		setFormError,
 	} = useFormState()
 
-	const allergiesRef = useRef<HTMLTextAreaElement>(null)
-	const coupleNameRef = useRef<HTMLInputElement>(null)
+	const [phone, setPhone] = useState('')
+	const [checkboxValues, setCheckboxValues] = useState<string[]>([
+		'alcohol-nope',
+	])
+	const [selectedRadios, setSelectedRadios] = useState<Record<string, string>>(
+		{}
+	)
+	const [errors, setErrors] = useState<Record<string, string>>({})
+	const [isButtonVisible, setIsButtonVisible] = useState(false)
+
+	const buttonRef = useRef<HTMLButtonElement>(null)
 	const inputNameRef = useRef<HTMLInputElement>(null)
 	const inputSurnameRef = useRef<HTMLInputElement>(null)
 	const inputTelegramRef = useRef<HTMLInputElement>(null)
+	const coupleNameRef = useRef<HTMLInputElement>(null)
+	const allergiesRef = useRef<HTMLTextAreaElement>(null)
 	const aboutRef = useRef<HTMLTextAreaElement>(null)
 
-	const onFormSubmit = async (e: FormEvent) => {
-		e.preventDefault()
+	const sanitizeInput = (input: string) => DOMPurify.sanitize(input)
 
-		if (validateForm()) {
-			// Функция для получения текста радио по выбранному значению
-			const getRadioText = (groupId: string, value: string): string => {
-				const group = formItems.find(item => item.id === groupId)
-				if (group?.type === 'radio' && group.options) {
-					// Убираем префикс groupId- перед сравнением
-					const cleanedValue = value.replace(`${groupId}-`, '')
-					const option = group.options.find(opt => opt.value === cleanedValue)
-					return option?.text || ''
+	const inputClassNames =
+		'border-slate-950 data-[hover=true]:border-slate-950/50'
+	const labelClassNames =
+		'text-slate-950 text-2xl lg:text-3xl mb-3 after:content-[""]'
+
+	useEffect(() => {
+		const defaults: Record<string, string> = {}
+		formItems.forEach(item => {
+			if (item.type === 'radio' && item.options) {
+				const defaultOption = item.options.find(opt => opt.isDefault)
+				if (defaultOption) {
+					defaults[item.id] = defaultOption.value
 				}
-				return ''
 			}
+		})
+		setSelectedRadios(defaults)
+	}, [])
 
-			// Функция для получения текста чекбоксов по значениям
-			const getCheckboxTexts = (values: string[]): Record<string, string[]> => {
-				// Группируем результаты по id каждой группы чекбоксов
-				const groupedCheckboxValues: Record<string, string[]> = {}
+	useEffect(() => {
+		if (!buttonRef.current) return
+		const observer = new IntersectionObserver(
+			([entry]) => setIsButtonVisible(entry.isIntersecting),
+			{ threshold: 0 }
+		)
+		observer.observe(buttonRef.current)
+		return () => observer.disconnect()
+	}, [])
 
-				formItems
-					.filter(item => item.type === 'checkbox') // Обрабатываем только чекбокс-группы
-					.forEach(checkboxGroup => {
-						if (checkboxGroup.options) {
-							// Находим значения, относящиеся к текущей группе
-							const groupValues = values
-								.map(value => {
-									const option = checkboxGroup.options?.find(
-										opt => `${checkboxGroup.id}-${opt.value}` === value
-									)
-									return option?.text || ''
-								})
-								.filter(Boolean) // Убираем пустые значения
+	const getItemLabel = (itemId: string) => {
+		const item = form.items[itemId]
+		return typeof item === 'string' ? item : item?.label
+	}
 
-							// Если есть значения, добавляем их в результирующий объект
-							if (groupValues.length > 0) {
-								groupedCheckboxValues[checkboxGroup.id] = groupValues
-							}
-						}
-					})
+	const isDisabled = (itemId: string) => {
+		return (
+			itemId !== 'attendance' &&
+			itemId !== 'name' &&
+			itemId !== 'surname' &&
+			!willBeAttended
+		)
+	}
 
-				return groupedCheckboxValues
+	const handleCheckboxChange = (value: string) => {
+		setCheckboxValues(prev => {
+			if (value === 'alcohol-nope') {
+				return ['alcohol-nope']
+			} else if (prev.includes(value)) {
+				return prev.filter(v => v !== value)
+			} else {
+				return [...prev.filter(v => v !== 'alcohol-nope'), value]
 			}
+		})
+	}
 
-			// Собираем данные формы
-			const formData = {
-				name: sanitizeInput(inputNameRef.current?.value || ''),
-				surname: sanitizeInput(inputSurnameRef.current?.value || ''),
-				coupleName: sanitizeInput(coupleNameRef.current?.value || ''),
-				allergies: sanitizeInput(allergiesRef.current?.value || ''),
-				phone: sanitizeInput(phone),
-				telegram: sanitizeInput(inputTelegramRef.current?.value || ''),
-				radios: Object.keys(selectedRadios).reduce((acc, groupId) => {
-					acc[groupId] = getRadioText(groupId, selectedRadios[groupId])
-					return acc
-				}, {} as Record<string, string>),
-				checkboxValues: getCheckboxTexts(checkboxValues),
-				about: sanitizeInput(aboutRef.current?.value || ''),
-			}
-
-			await sendToTelegram(formData)
+	const handleRadioChange = (groupId: string, value: string) => {
+		if (groupId === 'attendance') {
+			setWillBeAttended(value !== 'attendance-nope')
 		}
+		setSelectedRadios(prev => ({ ...prev, [groupId]: value }))
 	}
 
 	const validateForm = () => {
 		const newErrors: Record<string, string> = {}
 
-		if (!selectedRadios['attendance']) {
-			newErrors['attendance'] = 'Выберите один из вариантов'
-		} else if (!selectedRadios['transport'] && willBeAttended) {
-			newErrors['transport'] = 'Выберите способ транспорта'
-		}
-
+		if (!selectedRadios['attendance'])
+			newErrors['attendance'] = form.fieldErrors.attendance
+		if (!selectedRadios['transport'] && willBeAttended)
+			newErrors['transport'] = form.fieldErrors.transport
 		if (
-			selectedRadios['attendance'] === 'attendance-couple' &&
-			!sanitizeInput(coupleNameRef.current?.value || '').trim().length
-		) {
-			newErrors['attendance'] = 'Заполните имя вашей половинки'
-		}
-
-		if (!checkboxValues.length) {
-			newErrors['alcohol'] = 'Выберите хотя бы один напиток'
-		}
-
-		if (!sanitizeInput(inputNameRef.current?.value || '').trim().length) {
-			newErrors['name'] = 'Заполните Имя'
-		}
-		if (!sanitizeInput(inputSurnameRef.current?.value || '').trim().length) {
-			newErrors['surname'] = 'Заполните Фамилию'
-		}
-
+			selectedRadios['attendance'] === 'couple' &&
+			!coupleNameRef.current?.value.trim()
+		)
+			newErrors['attendance'] = form.fieldErrors.coupleName
+		if (!checkboxValues.length) newErrors['alcohol'] = form.fieldErrors.alcohol
+		if (!inputNameRef.current?.value?.trim())
+			newErrors['name'] = form.fieldErrors.name
+		if (!inputSurnameRef.current?.value?.trim())
+			newErrors['surname'] = form.fieldErrors.surname
 		if (
-			selectedRadios['allergies'] === 'allergies-yeap' &&
-			!sanitizeInput(allergiesRef.current?.value || '').trim().length
-		) {
-			newErrors['allergies'] = 'Заполните аллергены'
-		}
+			selectedRadios['allergies'] === 'yeap' &&
+			!allergiesRef.current?.value.trim()
+		)
+			newErrors['allergies'] = form.fieldErrors.allergies
+		if (!phone.trim() && willBeAttended)
+			newErrors['phone'] = form.fieldErrors.phone
+		if (willBeAttended && !aboutRef.current?.value?.trim())
+			newErrors['about'] = form.fieldErrors.about
 
-		if (!sanitizeInput(phone || '').trim().length && willBeAttended) {
-			newErrors['phone'] = 'Введите номер телефона'
-		}
-		if (
-			!sanitizeInput(aboutRef.current?.value || '').trim().length
-		) {
-			newErrors['about'] = 'Заполните немного информции "О себе"'
-		}
 		setErrors(newErrors)
 		return Object.keys(newErrors).length === 0
+	}
+
+	const getItemOptionLabel = (itemId: string, optionValue: string) => {
+		const item = form.items[itemId]
+		if (typeof item !== 'string') {
+			return item.options?.[optionValue] ?? ''
+		}
+		return ''
+	}
+
+	const getCheckboxTexts = (values: string[]): Record<string, string[]> => {
+		const groupedCheckboxValues: Record<string, string[]> = {}
+		formItems
+			.filter(item => item.type === 'checkbox')
+			.forEach(group => {
+				if (group.options) {
+					const groupValues = values
+						.filter(val => val.startsWith(`${group.id}-`))
+						.map(val => val.replace(`${group.id}-`, ''))
+					if (groupValues.length > 0) {
+						groupedCheckboxValues[group.id] = groupValues
+					}
+				}
+			})
+		return groupedCheckboxValues
 	}
 
 	const sendToTelegram = async (formData: IFormData) => {
@@ -196,7 +198,7 @@ const Form = forwardRef<HTMLFormElement, TForm>(({ className }, ref) => {
 			? `${formData.name} ${formData.surname} не придет
 ${formData.phone && `Телефон: ${formData.phone}`}
 ${formData.telegram && `Telegram: @${formData.telegram}`}`
-			: `Анкета гостя:\n
+			: `Анкета гостя:
 ФИО: ${formData.name} ${formData.surname}
 Телефон: ${formData.phone}
 Telegram: @${formData.telegram}
@@ -211,7 +213,6 @@ Telegram: @${formData.telegram}
 Еда: ${formData.radios.meal || 'Не указано'}
 Дополнительная информация: ${formData.about || 'Нет'}`
 
-		// Отправка сообщения
 		try {
 			setIsSending(true)
 			await axios.post(apiUrl, {
@@ -222,16 +223,8 @@ Telegram: @${formData.telegram}
 			setFormSended(true)
 			setShowFormModal(true)
 		} catch (error) {
-			if (axios.isAxiosError(error)) {
-				const errorMessage =
-					`Сообщение: ${error.message}\nОписание: ${error.response?.data?.description}` ||
-					'Произошла ошибка при отправке формы'
-				console.error('Ошибка при отправке в Telegram:', error)
-				setFormError(errorMessage)
-			} else {
-				console.error('Неизвестная ошибка:', error)
-				setFormError('Неизвестная ошибка. Пожалуйста, попробуйте снова.')
-			}
+			console.error('Ошибка при отправке:', error)
+			setFormError('Ошибка отправки в Telegram')
 			setFormSended(false)
 			setShowFormModal(true)
 		} finally {
@@ -239,191 +232,159 @@ Telegram: @${formData.telegram}
 		}
 	}
 
-	const handleCheckboxChange = (value: string) => {
-		setCheckboxValues(prevValues => {
-			if (value === 'alcohol-nope') {
-				return ['alcohol-nope']
-			} else if (prevValues.includes(value)) {
-				return prevValues.filter(v => v !== value)
-			} else {
-				return [...prevValues.filter(v => v !== 'alcohol-nope'), value]
+	const onFormSubmit = async (e: FormEvent) => {
+		e.preventDefault()
+		if (validateForm()) {
+			const formData: IFormData = {
+				name: sanitizeInput(inputNameRef.current?.value || ''),
+				surname: sanitizeInput(inputSurnameRef.current?.value || ''),
+				phone: sanitizeInput(phone),
+				telegram: sanitizeInput(inputTelegramRef.current?.value || ''),
+				coupleName: sanitizeInput(coupleNameRef.current?.value || ''),
+				allergies: sanitizeInput(allergiesRef.current?.value || ''),
+				about: sanitizeInput(aboutRef.current?.value || ''),
+				radios: selectedRadios,
+				checkboxValues: getCheckboxTexts(checkboxValues),
 			}
-		})
-	}
-
-	const handleRadioChange = (groupId: string, value: string) => {
-		if (value === 'attendance-nope') {
-			setWillBeAttended(false)
-		} else {
-			setWillBeAttended(true)
+			await sendToTelegram(formData)
 		}
-
-		setSelectedRadios(prevState => ({
-			...prevState,
-			[groupId]: value,
-		}))
 	}
-
-	const isDisabled = (itemId: string) => {
-		if (
-			itemId !== 'attendance' &&
-			itemId !== 'name' &&
-			itemId !== 'surname' &&
-			!willBeAttended
-		) {
-			return true
-		}
-		return false
-	}
-
-	useEffect(() => {
-		const defaultRadios: Record<string, string> = {}
-		formItems.forEach(item => {
-			if (item.type === 'radio' && item.options) {
-				const defaultOption = item.options.find(option => option.isDefault)
-				if (defaultOption) {
-					defaultRadios[item.id] = defaultOption.value
-				}
-			}
-		})
-		setSelectedRadios(defaultRadios)
-	}, [])
-
-	useEffect(() => {
-		if (!buttonRef.current) return
-
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				setIsButtonVisible(entry.isIntersecting)
-			},
-			{
-				root: null,
-				threshold: 0,
-			}
-		)
-
-		observer.observe(buttonRef.current)
-
-		return () => {
-			observer.disconnect()
-		}
-	}, [])
 
 	return (
 		<form
 			ref={ref}
 			onSubmit={onFormSubmit}
-			className={`${
-				className ?? ''
-			} flex flex-col gap-y-10 font-gyre-mono will-change-transform `}
+			className={cn(className, 'flex flex-col gap-y-10 font-gyre-mono')}
 		>
 			{formItems.map(item => {
 				if (item.type === 'radio') {
 					return (
-						<div key={`group-${item.label}-wrapper`}>
+						<div key={item.id}>
 							<RadioGroup
-								key={`group-${item.label}`}
-								label={item.label}
+								label={getItemLabel(item.id)}
+								isDisabled={isDisabled(item.id)}
 								classNames={{
 									label: cn(
 										labelClassNames,
-										`${isDisabled(item.id) ? 'opacity-50' : 'opacity-100'}`,
-										errors[item.id] ? 'text-red-500' : ''
+										isDisabled(item.id) && 'opacity-50',
+										errors[item.id] && 'text-red-500'
 									),
 								}}
-								defaultValue={
-									item.id +
-									'-' +
-									item.options?.find(option => option.isDefault)?.value
-								}
-								isRequired
-								isDisabled={isDisabled(item.id)}
+								defaultValue={`${item.id}-${
+									item.options?.find(opt => opt.isDefault)?.value
+								}`}
 								onValueChange={value => handleRadioChange(item.id, value)}
 							>
-								{item.options?.map(option => (
+								{item.options?.map(opt => (
 									<Radio
-										key={`radio-${item.label}-${option.value}`}
+										key={opt.value}
+										value={`${item.id}-${opt.value}`}
 										classNames={{
-											wrapper: cn(
-												'group-data-[selected=true]:border-slate-950'
-											),
+											wrapper: 'group-data-[selected=true]:border-slate-950',
 											control: cn(
 												'group-data-[selected=true]:bg-[url("/img/heart.svg")] bg-transparent bg-contain bg-no-repeat bg-center w-2.5 h-2.5 rounded-none'
 											),
-											label: cn('text-xl'),
+											label: 'text-xl',
 										}}
-										value={`${item.id}-${option.value}`}
 									>
-										{option.text}
+										{getItemOptionLabel(item.id, opt.value)}
 									</Radio>
 								))}
 							</RadioGroup>
 
-							{selectedRadios[item.id] === 'attendance-couple' && (
-								<Input
-									ref={coupleNameRef}
-									key={`input-couple-name`}
-									type='text'
-									variant='underlined'
-									label='Имя и Фамилия Вашей половинки'
-									placeholder=''
-									size='lg'
-									isRequired
-									isDisabled={isDisabled(item.id)}
-									classNames={{
-										inputWrapper: ` ${
-											errors[item.id] ? 'border-red-500' : inputClassNames
-										}`,
-										input: 'text-xl',
-										label: 'text-lg after:content-[""]',
-									}}
-								/>
-							)}
-
-							{selectedRadios[item.id] === 'allergies-yeap' && (
-								<Textarea
-									ref={allergiesRef}
-									key={`input-allergies`}
-									type='text'
-									variant='bordered'
-									placeholder='Напишите ваши аллергены, чтобы мы могли исключить их из состава блюд'
-									size='lg'
-									isRequired
-									isDisabled={isDisabled(item.id)}
-									classNames={{
-										inputWrapper: `transition-all mt-4 lg:mt-6 ${
-											errors[item.id] ? 'border-red-500' : inputClassNames
-										}`,
-										input: 'text-xl',
-										label: 'text-lg after:content-[""]',
-									}}
-								/>
-							)}
+							{item.id === 'allergies' &&
+								selectedRadios['allergies'] === 'allergies-yeap' && (
+									<Textarea
+										ref={allergiesRef}
+										variant='bordered'
+										placeholder={
+											typeof form.items['allergies'] === 'object'
+												? form.items['allergies'].textarea ?? ''
+												: ''
+										}
+										isRequired
+										isDisabled={isDisabled('allergies')}
+										classNames={{
+											inputWrapper: cn(
+												'transition-all mt-4 lg:mt-6',
+												errors['allergies'] && 'border-red-500',
+												inputClassNames
+											),
+											input: 'text-xl',
+											label: 'text-lg after:content-[""]',
+										}}
+									/>
+								)}
 						</div>
 					)
 				}
 
+				if (item.type === 'checkbox') {
+					return (
+						<CheckboxGroup
+							key={item.id}
+							label={getItemLabel(item.id)}
+							value={checkboxValues}
+							isDisabled={isDisabled(item.id)}
+							classNames={{
+								label: cn(
+									labelClassNames,
+									isDisabled(item.id) && 'opacity-50',
+									errors[item.id] && 'text-red-500'
+								),
+							}}
+						>
+							{item.options?.map(opt => (
+								<Checkbox
+									key={opt.value}
+									value={`${item.id}-${opt.value}`}
+									onChange={() =>
+										handleCheckboxChange(`${item.id}-${opt.value}`)
+									}
+									icon={<Heart color='#DDDDDC' />}
+									classNames={{
+										wrapper: 'group-data-[selected=true]:border-slate-950',
+										label: 'text-xl',
+									}}
+								>
+									{getItemOptionLabel(item.id, opt.value)}
+								</Checkbox>
+							))}
+						</CheckboxGroup>
+					)
+				}
+
 				if (item.type === 'input') {
+					const inputRef =
+						item.id === 'name'
+							? inputNameRef
+							: item.id === 'surname'
+							? inputSurnameRef
+							: item.id === 'telegram'
+							? inputTelegramRef
+							: undefined
+
 					if (item.id === 'phone') {
 						return (
 							<ReactInputMask
+								key={item.id}
 								mask='+7 (999) 999-99-99'
 								value={phone}
 								onChange={e => setPhone(e.target.value)}
-								key={`input-${item.label}`}
 							>
-								{inputProps => (
+								{props => (
 									<Input
-										{...inputProps}
-										label='Номер телефона'
+										{...props}
+										label={form.items[item.id]}
 										variant='underlined'
-										size='lg'
-										isRequired={!isDisabled(item.id)}
+										isRequired
 										isDisabled={isDisabled(item.id)}
 										classNames={{
-											inputWrapper: `transition-all ${
-												errors['phone'] ? 'border-red-500' : inputClassNames
-											}`,
+											inputWrapper: cn(
+												'transition-all',
+												errors[item.id] && 'border-red-500',
+												inputClassNames
+											),
 											input: 'text-xl',
 											label: 'text-lg after:content-[""]',
 										}}
@@ -431,142 +392,82 @@ Telegram: @${formData.telegram}
 								)}
 							</ReactInputMask>
 						)
-					} else if (item.id === 'telegram') {
-						return (
-							<Input
-								ref={inputTelegramRef}
-								key={`input-${item.label}`}
-								type='text'
-								variant='underlined'
-								label={item.label}
-								placeholder=''
-								size='lg'
-								isDisabled={isDisabled(item.id)}
-								startContent='@'
-								classNames={{
-									inputWrapper: `transition-all ${
-										errors[item.id] ? 'border-red-500' : inputClassNames
-									}`,
-									input: 'text-xl data-[has-start-content=true]:ps-0',
-									label: 'text-lg after:content-[""]',
-								}}
-							/>
-						)
-					} else
-						return (
-							<Input
-								ref={
-									item.id === 'name'
-										? inputNameRef
-										: item.id === 'surname'
-										? inputSurnameRef
-										: null
-								}
-								key={`input-${item.label}`}
-								type='text'
-								variant='underlined'
-								label={item.label}
-								placeholder=''
-								size='lg'
-								isRequired
-								isDisabled={isDisabled(item.id)}
-								classNames={{
-									inputWrapper: `transition-all ${
-										errors[item.id] ? 'border-red-500' : inputClassNames
-									}`,
-									input: 'text-xl',
-									label: 'text-lg after:content-[""]',
-								}}
-							/>
-						)
-				}
+					}
 
-				if (item.type === 'checkbox') {
 					return (
-						<CheckboxGroup
-							key={`group-${item.label}`}
-							label={item.label}
-							classNames={{
-								label: cn(
-									labelClassNames,
-									`${isDisabled(item.id) ? 'opacity-50' : 'opacity-100'}`,
-									errors[item.id] ? 'text-red-500' : ''
-								),
-							}}
-							defaultValue={item.options
-								?.filter(option => option.isDefault)
-								.map(option => option.value)}
-							value={checkboxValues}
+						<Input
+							key={item.id}
+							ref={inputRef}
+							label={getItemLabel(item.id)}
+							variant='underlined'
 							isRequired
 							isDisabled={isDisabled(item.id)}
-						>
-							{item.options?.map(option => (
-								<Checkbox
-									key={`checkbox-${item.label}-${option.value}`}
-									classNames={{
-										wrapper: cn(
-											'group-data-[selected=true]:border-slate-950 after:bg-slate-950'
-										),
-										label: cn('text-xl'),
-									}}
-									icon={<Heart color='#DDDDDC' />}
-									value={`${item.id}-${option.value}`}
-									onChange={() =>
-										handleCheckboxChange(`${item.id}-${option.value}`)
-									}
-								>
-									{option.text}
-								</Checkbox>
-							))}
-						</CheckboxGroup>
+							startContent={item.id === 'telegram' && '@'}
+							classNames={{
+								inputWrapper: cn(
+									'transition-all',
+									errors[item.id] && 'border-red-500',
+									inputClassNames
+								),
+								input: 'text-xl data-[has-start-content=true]:ps-0',
+								label: 'text-lg after:content-[""]',
+							}}
+						/>
 					)
 				}
 
-				if (item.id === 'about') {
+				if (item.type === 'textarea') {
 					return (
 						<Textarea
-							ref={aboutRef}
-							key={`textarea-about`}
-							type='text'
+							key={item.id}
+							ref={item.id === 'about' ? aboutRef : undefined}
+							placeholder={getItemLabel(item.id)}
 							variant='bordered'
-							size='lg'
-							placeholder={item.label}
 							isDisabled={isDisabled(item.id)}
 							isRequired
 							classNames={{
-								inputWrapper: `transition-all mt-4 lg:mt-6 ${
-									errors[item.id] ? 'border-red-500' : inputClassNames
-								}`,
+								inputWrapper: cn(
+									'transition-all mt-4 lg:mt-6',
+									errors[item.id] && 'border-red-500',
+									inputClassNames
+								),
 								input: 'text-xl',
 								label: 'text-lg after:content-[""]',
 							}}
 						/>
 					)
 				}
+
+				return null
 			})}
-			<div>
-				{Object.keys(errors).length > 0 && (
-					<div className='text-red-500 text-xl'>
-						<p>Форма заполнена не полностью:</p>
-						<ul>
-							{Object.values(errors).map((error, index) => (
-								<li key={index}>- {error}</li>
-							))}
-						</ul>
-					</div>
-				)}
-				<SparkleFx speed='fast' count={50} trigger={isButtonVisible}>
-					<Button
-						className='font-gyre-mono text-2xl bg-slate-950 text-zinc-200 py-6 w-full mt-4 relative z-10'
-						variant='faded'
-						type='submit'
-						isLoading={isSending}
-						ref={buttonRef}
-					>
-						Отправить
-					</Button>
-				</SparkleFx>
-			</div>
+
+			{Object.keys(errors).length > 0 && (
+				<div className='text-red-500 text-xl'>
+					<p>{form.errorsTitle}</p>
+					<ul>
+						{Object.keys(errors).map(key => (
+							<li key={key}>- {form.fieldErrors[key]}</li>
+						))}
+					</ul>
+				</div>
+			)}
+
+			<SparkleFx
+				className='w-fit'
+				speed='fast'
+				count={50}
+				trigger={isButtonVisible}
+			>
+				<Button
+					className='font-gyre-mono text-2xl bg-slate-950 text-zinc-200 py-6 w-full mt-4 relative z-10'
+					variant='faded'
+					type='submit'
+					isLoading={isSending}
+					ref={buttonRef}
+				>
+					{form.sendButton}
+				</Button>
+			</SparkleFx>
 		</form>
 	)
 })

@@ -15,7 +15,7 @@ const Loader = () => {
 
 	return (
 		<div
-			className={`fixed inset-0 w-screen h-screen bg-stone-50 flex items-center justify-center text-white text-2xl z-20 transition-opacity duration-1000 pointer-events-none ${
+			className={`fixed inset-0 w-screen h-screen bg-stone-50 flex items-center justify-center text-white text-2xl z-50 transition-opacity duration-1000 pointer-events-none ${
 				loaded ? 'opacity-0' : 'opacity-100'
 			}`}
 		>
